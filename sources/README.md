@@ -119,19 +119,38 @@ The script will:
 
 Opt out of Wayback with `--no-snapshot`. Wayback failures (rate limits, timeouts) log a warning and set `wayback_url: null` without blocking the capture — you can re-snapshot later.
 
-### Semi-automated (JS-rendered forum pages)
+### Rendered (JS-rendered sites — Google Groups, Reddit, SO, Substack, etc.)
 
-Google Groups, some Reddit threads, and certain modern forums render posts via JavaScript; `fetch` alone won't get them.
+Add `--render` to launch headless Chromium (via Playwright), wait for the page to finish rendering, then dump the fully-hydrated HTML through the same extractor. Works for any site that renders content client-side.
 
-1. Open the thread in your browser.
-2. Save the page HTML (`File → Save As...` → Webpage, HTML only).
-3. Run:
+```bash
+npm run capture:source -- \
+  https://groups.google.com/a/chromium.org/g/chromium-extensions/c/S1_uqpDFVzY \
+  --type=forum \
+  --render \
+  --topics=permissions,cws-review \
+  --slug=content-scripts-matches-review
+```
+
+Requires a one-time `npx playwright install chromium` (installs ~150MB Chrome binary under `~/Library/Caches/ms-playwright/`). The script lazy-imports Playwright so non-rendered captures stay fast.
+
+The `--slug` flag lets you override the URL-derived filename slug — useful when replacing a stub or when the URL is ugly (`c/S1_uqpDFVzY` → `content-scripts-matches-review`).
+
+Capture method annotation (stored in frontmatter as `capture_method`): `script-rendered` when `--render` is used vs `script` for plain fetch.
+
+### Fallback (login-walled or anti-bot)
+
+Some venues (Chromium issue tracker while logged out, Cloudflare-protected blogs, X/Twitter) resist both fetch and headless browsers. For those:
+
+1. Open the URL in your logged-in browser.
+2. `File → Save As...` → Webpage, HTML only.
+3. Run with `--from-file`:
    ```bash
    npm run capture:source -- \
-     --url https://groups.google.com/a/chromium.org/g/chromium-extensions/c/S1_uqpDFVzY \
+     --url <original-url> \
      --type=forum \
      --from-file ./thread.html \
-     --topics=permissions,cws-review
+     --topics=...
    ```
 
 The script parses your local file but records the original URL in frontmatter. Wayback is still pinged against the original URL.

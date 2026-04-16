@@ -25,5 +25,8 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: CWS structural check
+        run: npx tsx scripts/validate-cws.ts
+
       - name: Firefox build
         run: npm run build:firefox

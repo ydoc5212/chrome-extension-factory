@@ -1,0 +1,120 @@
+# Keepalive Publish
+#
+# Scheduled workflow that bumps the patch version and re-publishes the
+# extension to the Chrome Web Store every 4 months. This prevents the CWS
+# listing from getting flagged with a "hasn't been updated in a long time"
+# staleness warning, which erodes user trust and can deprioritize the listing
+# in search results.
+#
+# This is a workaround, not a substitute for real maintenance. If the
+# extension is actually broken, ship a real fix.
+#
+# Activate by setting these 4 secrets in the repo (Settings → Secrets and
+# variables → Actions). Without them the workflow exits cleanly so forks of
+# the template don't get red-X'd failure emails:
+#   - CWS_EXTENSION_ID    The extension ID from the CWS dashboard
+#   - CWS_CLIENT_ID       OAuth client ID (see chrome-webstore-upload-keys)
+#   - CWS_CLIENT_SECRET   OAuth client secret
+#   - CWS_REFRESH_TOKEN   OAuth refresh token
+#
+# See docs/08-keepalive-publish.md for setup instructions.
+
+name: Keepalive Publish
+
+on:
+  schedule:
+    # 1st day of every 4th month (Jan, May, Sep), 12:00 UTC
+    - cron: '0 12 1 */4 *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check secrets are configured
+        id: gate
+        env:
+          CWS_EXTENSION_ID: ${{ secrets.CWS_EXTENSION_ID }}
+        run: |
+          if [ -z "$CWS_EXTENSION_ID" ]; then
+            echo "CWS_EXTENSION_ID secret not set — skipping keepalive publish."
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout
+        if: steps.gate.outputs.enabled == 'true'
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node
+        if: steps.gate.outputs.enabled == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        if: steps.gate.outputs.enabled == 'true'
+        run: npm ci
+
+      - name: Bump patch version
+        if: steps.gate.outputs.enabled == 'true'
+        id: bump
+        run: |
+          NEW_VERSION=$(npm version patch --no-git-tag-version)
+          echo "version=${NEW_VERSION#v}" >> "$GITHUB_OUTPUT"
+          echo "Bumped to $NEW_VERSION"
+
+      - name: Build
+        if: steps.gate.outputs.enabled == 'true'
+        run: npm run build
+
+      - name: Zip
+        if: steps.gate.outputs.enabled == 'true'
+        run: npm run zip
+
+      - name: Locate zip artifact
+        if: steps.gate.outputs.enabled == 'true'
+        id: zip
+        run: |
+          # WXT default: .output/<name>-<version>-chrome.zip
+          ZIP_PATH=$(ls .output/*-chrome.zip | head -n 1)
+          if [ -z "$ZIP_PATH" ]; then
+            echo "No chrome zip found in .output/" >&2
+            exit 1
+          fi
+          echo "path=$ZIP_PATH" >> "$GITHUB_OUTPUT"
+          echo "Found zip: $ZIP_PATH"
+
+      - name: Upload and publish to Chrome Web Store
+        if: steps.gate.outputs.enabled == 'true'
+        env:
+          CWS_EXTENSION_ID: ${{ secrets.CWS_EXTENSION_ID }}
+          CWS_CLIENT_ID: ${{ secrets.CWS_CLIENT_ID }}
+          CWS_CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
+          CWS_REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
+        run: |
+          npx -y chrome-webstore-upload-cli@3 upload \
+            --source "${{ steps.zip.outputs.path }}" \
+            --extension-id "$CWS_EXTENSION_ID" \
+            --client-id "$CWS_CLIENT_ID" \
+            --client-secret "$CWS_CLIENT_SECRET" \
+            --refresh-token "$CWS_REFRESH_TOKEN" \
+            --auto-publish
+
+      - name: Commit version bump
+        if: steps.gate.outputs.enabled == 'true'
+        env:
+          NEW_VERSION: ${{ steps.bump.outputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json
+          git commit -m "chore: keepalive version bump to v${NEW_VERSION} [skip ci]"
+          git push

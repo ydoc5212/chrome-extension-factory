@@ -6,5 +6,5 @@
 
 ## 2026-04-16
 
-- [Questions about the Chrome Web Store review process — chromium-extensions](../forums/2026-04-16_google-group_content-scripts-matches-review.md) **(b)** · _forum_
+- [publishing delayed - Broad host permissions](../forums/2026-04-16_google-group_content-scripts-matches-review.md) **(b)** · _forum_
 - [chrome.permissions  |  API  |  Chrome for Developers](../official/2026-04-16_chrome-developers_reference-api-permissions.md) **(a)** · _official_

@@ -22,6 +22,9 @@ marketing/.next
 # Secrets
 .secrets.local.json
 
+# Private notes (competitor research, internal scratch)
+/private/
+
 # Archives
 *.zip
 
@@ -35,3 +38,4 @@ marketing/.next
 *.njsproj
 *.sln
 *.sw?
+.claude/worktrees/

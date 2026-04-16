@@ -10,9 +10,11 @@ Discovery artifacts that fed this queue:
 
 - Each checkbox is one capture. Mark `[x]` when the file lands under `sources/`.
 - Capture-method annotations:
-  - **(auto)** — `npm run capture:source -- <url> --type=<t>` Just Works.
-  - **(browser-save)** — JS-rendered or blocked; in your browser do File → Save As → Webpage HTML only → run `--from-file=<path>` in the capture command.
-  - **(manual)** — paywall / anti-bot / Cloudflare; open in browser, copy-paste into a template from `_templates/`.
+  - **(auto)** — `npm run capture:source -- <url> --type=<t>` (plain fetch) Just Works.
+  - **(auto --render)** — pass `--render` to launch headless Chromium via Playwright. For JS-rendered venues: Google Groups, Reddit, SO, Substack, Chromium tracker (logged-out views).
+  - **(browser-save)** — Cloudflare/WAF/login-walled; save HTML in your browser, then `--from-file=<path>`.
+  - **(manual)** — paywall + anti-bot; open in browser and copy-paste into a template from `_templates/`.
+- Use `--slug=<custom-slug>` to override the URL-derived filename — useful for replacing a stub in place or when the URL is ugly.
 - After each batch: `npm run index:sources` to regenerate `_index/`.
 - When the queue empties, run a fresh discovery pass (see "Next discovery passes" at the bottom).
 
@@ -22,23 +24,22 @@ Discovery artifacts that fed this queue:
 
 Captures `docs/09-cws-best-practices.md` already depends on. Finishing these unblocks retrofitting inline URLs in `docs/09` to `sources/` references.
 
-- [ ] **Backfill Google Group `S1_uqpDFVzY`** — replace the stub at `sources/forums/2026-04-16_google-group_content-scripts-matches-review.md` with full thread content. **(browser-save)**
-  URL: https://groups.google.com/a/chromium.org/g/chromium-extensions/c/S1_uqpDFVzY
+- [x] **Backfill Google Group `S1_uqpDFVzY`** — captured 2026-04-16 via `--render`. Signal extracted: content_scripts.matches count as host permissions for review; `activeTab`+`chrome.scripting.executeScript` is the review-friendly alternative. File: `forums/2026-04-16_google-group_content-scripts-matches-review.md`.
 - [ ] **Alex MacArthur — "Avoiding a Host Permission Review Delay"** — the single most cross-cited community post on the activeTab pattern. **(auto)**
   URL: https://macarthur.me/posts/chrome-extension-host-permission/
 
 ## Batch 2 — Tier-S forum: chromium-extensions Google Group
 
-The hub. Every other venue cross-links here. All require **(browser-save)** because Google Groups is JS-rendered.
+The hub. Every other venue cross-links here. All **(auto --render)** — Playwright handles the JS rendering.
 
-- [ ] **`k5upFLVnPqE`** — SW keepalive + alarms, Oliver Dunk's canonical answer on registering event listeners at top-level.
+- [ ] **`k5upFLVnPqE`** — SW keepalive + alarms, Oliver Dunk's canonical answer on registering event listeners at top-level. **(auto --render)**
   URL: https://groups.google.com/a/chromium.org/g/chromium-extensions/c/k5upFLVnPqE
-- [ ] **`BrwVKyIvCMs`** — review times + deferred publishing, Deco (Chrome team) answer.
+- [ ] **`BrwVKyIvCMs`** — review times + deferred publishing, Deco (Chrome team) answer. **(auto --render)**
   URL: https://groups.google.com/a/chromium.org/g/chromium-extensions/c/BrwVKyIvCMs
-- [ ] **`POU6sW-I39M`** — auto-update SW race condition, 80+ posts over 4 years, Chrome team engaged.
+- [ ] **`POU6sW-I39M`** — auto-update SW race condition, 80+ posts over 4 years, Chrome team engaged. **(auto --render)** — heavy thread, render may take longer.
   URL: https://groups.google.com/a/chromium.org/g/chromium-extensions/c/POU6sW-I39M
-- [ ] **Rejection-code sweep** — for each code below, Google `site:groups.google.com/a/chromium.org/g/chromium-extensions "<code>"` and capture the top 1–2 hits. Codes: Blue Argon, Blue Nickel, Blue Potassium, Purple Lithium, Purple Nickel, Purple Magnesium, Purple Copper, Red Titanium, Red Zinc, Red Nickel, Red Potassium, Red Silicon, Yellow Zinc, Yellow Argon, Yellow Lithium, Yellow Nickel, Yellow Potassium, Grey Titanium.
-- [ ] **Oliver Dunk recent responses** — if the Group search supports filtering by poster, capture top 5 recent. Otherwise grep from the first few rejection-code captures for his replies and follow the thread IDs.
+- [ ] **Rejection-code sweep** — for each code below, Google `site:groups.google.com/a/chromium.org/g/chromium-extensions "<code>"` and capture the top 1–2 hits with **(auto --render)**. Codes: Blue Argon, Blue Nickel, Blue Potassium, Purple Lithium, Purple Nickel, Purple Magnesium, Purple Copper, Red Titanium, Red Zinc, Red Nickel, Red Potassium, Red Silicon, Yellow Zinc, Yellow Argon, Yellow Lithium, Yellow Nickel, Yellow Potassium, Grey Titanium.
+- [ ] **Oliver Dunk recent responses** — if the Group search supports filtering by poster, capture top 5 recent. Otherwise grep from the first few rejection-code captures for his replies and follow the thread IDs. **(auto --render)**
 
 ## Batch 3 — Tier-S blog: Wladimir Palant (Almost Secure)
 
@@ -52,8 +53,8 @@ The hub. Every other venue cross-links here. All require **(browser-save)** beca
 
 Author of the only up-to-date book on browser extensions (2nd ed. Sept 2025). Prompt API + User Scripts + Offscreen coverage.
 
-- [ ] **Frisbie Substack — 3-part malicious extension series.** Capture all three. **(browser-save — Substack gates archive to fetch; the `/archive` endpoint did work in discovery, try that first)**
-- [ ] **Frisbie — "Tracking Browser Extension Ownership"** — names an attack vector (acquired-extension auto-update) `docs/09` misses entirely. **(browser-save)**
+- [ ] **Frisbie Substack — 3-part malicious extension series.** Capture all three. **(auto --render)** — Substack renders client-side; use `/archive` endpoint if discovery finds individual post URLs are gated.
+- [ ] **Frisbie — "Tracking Browser Extension Ownership"** — names an attack vector (acquired-extension auto-update) `docs/09` misses entirely. **(auto --render)**
 - [ ] **`buildingbrowserextensions.com`** — if a blog exists at the book's site, capture the extension-specific posts.
 
 ## Batch 5 — Tier-S blog: Coditude (Hrishikesh Kale)
@@ -84,8 +85,8 @@ Already inline-cited in `docs/09`; elevate to full `sources/blogs/` captures so 
 
 Pairs with the Google Group: SO gives runnable code, Group gives the "why."
 
-- [ ] **Top 10 highest-voted answers on `[chrome-extension-manifest-v3]`** — https://stackoverflow.com/questions/tagged/chrome-extension-manifest-v3?tab=Votes **(browser-save — SO blocks WebFetch)**
-- [ ] **Top 5 answers on `[google-chrome-extension]` published since 2023.**
+- [ ] **Top 10 highest-voted answers on `[chrome-extension-manifest-v3]`** — https://stackoverflow.com/questions/tagged/chrome-extension-manifest-v3?tab=Votes **(auto --render)** — or consider the Stack Exchange API for structured metadata (vote counts, accepted flag) — see "Next discovery passes" for the API-integration task.
+- [ ] **Top 5 answers on `[google-chrome-extension]` published since 2023.** **(auto --render)**
 
 ## Batch 9 — Tier-A: WXT framework (factory-specific)
 
@@ -97,29 +98,31 @@ This repo uses WXT; its Discussions are load-bearing for toolchain decisions. No
 
 ## Batch 10 — Chromium issue tracker (atomic citation unit)
 
-Bug numbers pin knowledge to stable Chrome team identifiers. Requires a logged-in browser.
+Bug numbers pin knowledge to stable Chrome team identifiers.
 
-- [ ] **#40805401** — referenced from Group + SO. **(browser-save)**
-- [ ] **#1271154** **(browser-save)**
-- [ ] **#1316588** **(browser-save)**
+- [ ] **#40805401** — referenced from Group + SO. **(auto --render)** first; fall back to **(browser-save)** if logged-in views are needed.
+- [ ] **#1271154** **(auto --render)**
+- [ ] **#1316588** **(auto --render)**
 - [ ] **Ongoing:** when a capture references a bug number, log it here instead of chasing it mid-flow.
 
 ---
 
 ## Scraping gotchas — consult when hitting resistance
 
+Default strategy: try plain fetch first (fastest), fall back to `--render`, fall back to browser-save.
+
 | Venue | Problem | Workaround |
 |---|---|---|
-| Google Groups | JS-rendered; fetch returns skeleton | browser Save As → `--from-file` |
-| Stack Overflow | WebFetch blocked | browser-save |
-| Reddit | WebFetch blocked; site:reddit.com returns empty | browser-save, or try `/r/chrome_extensions/top.json?t=year` public endpoint (untested) |
-| Chromium issue tracker | Login wall on list views | direct issue URLs in logged-in browser; `--from-file` |
-| X / Twitter | 402 to WebFetch | skip as scraping target; use Mastodon mirror (`@oliverdunk@mastodon.social`) when available |
-| averagedevs.com | 403 (Cloudflare) | manual copy-paste |
-| secureannex.com/blog | WAF stub | logged-in browser |
-| extensionpay.com/blog | intermittent 500s | retry, or manual |
-| stefanvd.net | deep URLs 404 on guessed slugs | always navigate from the blog index |
-| Substack archives | subscribe-gate stub to fetch | try `/archive` endpoint first, then browser-save |
+| Google Groups | JS-rendered; fetch returns skeleton | **`--render`** (confirmed working) |
+| Stack Overflow | Fetch blocked | **`--render`**, or Stack Exchange API |
+| Reddit | Fetch blocked | **`--render`**, or `/r/<sub>/comments/<id>.json` public endpoint (lightweight) |
+| Chromium issue tracker | Login wall on list views; direct issue pages sometimes accessible | **`--render`** first; `--from-file` if logged-in views are needed |
+| X / Twitter | Login wall; returns 402 to fetch; rate-limits headless too | skip as scraping target; use Mastodon mirror (`@oliverdunk@mastodon.social`) when available |
+| averagedevs.com | 403 (Cloudflare) | Cloudflare blocks headless Chrome too — `--render` likely fails; **browser-save or manual** |
+| secureannex.com/blog | WAF stub | logged-in browser, `--from-file` |
+| extensionpay.com/blog | intermittent 500s | retry fetch or `--render`; fall back to manual |
+| stefanvd.net | deep URLs 404 on guessed slugs | always navigate from the blog index first |
+| Substack archives | subscribe-gate stub to fetch | **`--render`** (SPA renders fine); try `/archive` endpoint if individual post gates |
 
 **Known non-targets (don't chase):**
 - No official Chrome extensions Discord exists. The Google Group IS the chat.
@@ -130,6 +133,7 @@ Bug numbers pin knowledge to stable Chrome team identifiers. Requires a logged-i
 
 ## Next discovery passes (when this queue empties)
 
+- **API integrations for structured metadata:** Stack Exchange API (SO vote counts, accepted flag), Reddit JSON endpoints (thread metadata, comment trees), GitHub REST (WXT issues + discussions via GraphQL). These give us post counts, authors, timestamps as structured data instead of scraped HTML. ~2 hours total.
 - **Extension-framework comparative evaluation** — Plasmo, CRXJS, extension.js. Docs + Discussions for toolchain trade-offs beyond WXT-specific knowledge.
 - **Big-shop MV2 → MV3 migration writeups** — Grammarly, Honey, LastPass, uBlock engineering blogs. Often have the most concrete MV3 pitfalls at scale.
 - **Academic / security-research papers** — USENIX Security, IEEE S&P, CCS. Probably Tier B but one pass to confirm.

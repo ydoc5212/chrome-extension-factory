@@ -4,6 +4,7 @@
 - [ ] Version bumped in package.json
 - [ ] `npm run compile` passes (no TypeScript errors)
 - [ ] `npm run build` succeeds
+- [ ] `npm run check:cws:ship` passes (zero errors — see [09-cws-best-practices.md](../09-cws-best-practices.md))
 - [ ] Extension tested as unpacked (load from .output/chrome-mv3/)
 - [ ] QA checklist passed (see qa-checklist.md)
 - [ ] Privacy policy URL is live and reachable

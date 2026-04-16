@@ -6,8 +6,10 @@
  *   npm run capture:source -- <url> --type=official|forum|blog
  *     [--topics=a,b,c]
  *     [--no-snapshot]
- *     [--from-file=path.html]
+ *     [--render]                  # launch headless chromium instead of fetch (for JS-rendered sites)
+ *     [--from-file=path.html]     # use local HTML instead of fetching
  *     [--source-id=nearform]
+ *     [--slug=custom-slug]        # override URL-derived slug (useful for replacing a stub)
  *     [--author="Name"]
  *     [--evidence-class=a|b|c|d]
  */
@@ -28,8 +30,10 @@ interface Args {
   type: SourceType | null;
   topics: string[];
   snapshot: boolean;
+  render: boolean;
   fromFile: string | null;
   sourceId: string | null;
+  slug: string | null;
   author: string | null;
   evidenceClass: EvidenceClass | null;
 }
@@ -64,8 +68,10 @@ function parseArgs(argv: string[]): Args {
     type: null,
     topics: [],
     snapshot: true,
+    render: false,
     fromFile: null,
     sourceId: null,
+    slug: null,
     author: null,
     evidenceClass: null,
   };
@@ -84,10 +90,14 @@ function parseArgs(argv: string[]): Args {
         .filter(Boolean);
     } else if (raw === "--no-snapshot") {
       args.snapshot = false;
+    } else if (raw === "--render") {
+      args.render = true;
     } else if (raw.startsWith("--from-file=")) {
       args.fromFile = raw.slice("--from-file=".length);
     } else if (raw.startsWith("--source-id=")) {
       args.sourceId = raw.slice("--source-id=".length);
+    } else if (raw.startsWith("--slug=")) {
+      args.slug = raw.slice("--slug=".length);
     } else if (raw.startsWith("--author=")) {
       args.author = raw.slice("--author=".length).replace(/^"|"$/g, "");
     } else if (raw.startsWith("--evidence-class=")) {
@@ -104,6 +114,9 @@ function parseArgs(argv: string[]): Args {
   }
   if (!args.url) throw new Error("Missing URL (pass as first positional or --url=...)");
   if (!args.type) throw new Error("Missing --type=official|forum|blog");
+  if (args.render && args.fromFile) {
+    throw new Error("--render and --from-file are mutually exclusive");
+  }
   return args;
 }
 
@@ -148,6 +161,31 @@ async function fetchHtml(url: string): Promise<string> {
   });
   if (!resp.ok) throw new Error(`Fetch failed: ${resp.status} ${resp.statusText}`);
   return await resp.text();
+}
+
+async function renderHtml(url: string): Promise<string> {
+  let chromium;
+  try {
+    ({ chromium } = await import("playwright"));
+  } catch {
+    throw new Error(
+      "Playwright not installed. Run: npm install --save-dev playwright && npx playwright install chromium",
+    );
+  }
+  const browser = await chromium.launch({ headless: true });
+  try {
+    const context = await browser.newContext({
+      userAgent:
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      locale: "en-US",
+    });
+    const page = await context.newPage();
+    await page.goto(url, { waitUntil: "networkidle", timeout: 60_000 });
+    await page.waitForTimeout(1500);
+    return await page.content();
+  } finally {
+    await browser.close();
+  }
 }
 
 async function saveToWayback(url: string): Promise<string | null> {
@@ -228,7 +266,7 @@ function buildBody(
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   const sourceId = args.sourceId ?? deriveSourceId(args.url);
-  const slug = deriveSlug(args.url);
+  const slug = args.slug ?? deriveSlug(args.url);
   const date = todayISO();
   const filename = `${date}_${sourceId}_${slug}.md`;
 
@@ -241,6 +279,9 @@ async function main() {
   if (args.fromFile) {
     html = await readFile(args.fromFile, "utf8");
     console.log(`[capture] reading local file: ${args.fromFile}`);
+  } else if (args.render) {
+    console.log(`[capture] rendering (playwright): ${args.url}`);
+    html = await renderHtml(args.url);
   } else {
     console.log(`[capture] fetching: ${args.url}`);
     html = await fetchHtml(args.url);
@@ -261,7 +302,7 @@ async function main() {
   const frontmatter: Record<string, unknown> = {
     url: args.url,
     captured_at: date,
-    capture_method: args.fromFile ? "manual" : "script",
+    capture_method: args.fromFile ? "manual" : args.render ? "script-rendered" : "script",
     source_type: args.type,
     source_id: sourceId,
     title_at_capture: title,

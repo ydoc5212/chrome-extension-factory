@@ -2,6 +2,8 @@
 
 Pick your extension type below and follow the strip-down checklist. Each takes under 2 minutes.
 
+> **About the welcome page.** Every profile below assumes you'll either keep `entrypoints/welcome/` (configure it via `entrypoints/welcome/config.ts`) or delete it. Delete only if your extension works with smart defaults and no host permissions — see `docs/10-onboarding.md` for the decision rule.
+
 ---
 
 ## 1. Content-Script-Only
@@ -12,12 +14,13 @@ Pick your extension type below and follow the strip-down checklist. Each takes u
 - `entrypoints/content.ts`
 - `utils/dom.ts`
 - `utils/observer.ts`
+- `entrypoints/welcome/` + `utils/permissions.ts` if you need host access (request from welcome). Delete both if defaults are enough.
 
 **Delete:**
 - `entrypoints/popup/`
 - `entrypoints/options/`
 - `entrypoints/sidepanel/`
-- `entrypoints/background.ts` (unless you need alarms or messaging)
+- `entrypoints/background.ts` (unless you need alarms or messaging — but you need it to open the welcome tab if you keep welcome)
 - `utils/messaging.ts` (if no background)
 
 **Config (`wxt.config.ts`):**
@@ -45,6 +48,7 @@ manifest: {
 - `entrypoints/background.ts`
 - `entrypoints/options/` (if you need a settings page)
 - `utils/messaging.ts`
+- `entrypoints/welcome/` + `utils/permissions.ts` if you need host access. Delete if not.
 
 **Delete:**
 - `entrypoints/content.ts`
@@ -77,6 +81,7 @@ manifest: {
 - `entrypoints/background.ts`
 - `entrypoints/options/` (optional)
 - `utils/messaging.ts`
+- `entrypoints/welcome/` + `utils/permissions.ts` if you need host access. Delete if not.
 
 **Delete:**
 - `entrypoints/popup/`
@@ -137,6 +142,7 @@ chrome.devtools.panels.create(
 - `entrypoints/popup/`
 - `entrypoints/sidepanel/`
 - `entrypoints/content.ts`
+- `entrypoints/welcome/` (devtools extensions don't need a welcome — the panel itself is the surface)
 - `utils/dom.ts`
 - `utils/observer.ts`
 
@@ -164,5 +170,6 @@ manifest: {
 **Checklist:**
 - [ ] Edit `matches` in `content.ts` to target your site
 - [ ] Verify all permissions in `wxt.config.ts` are actually used
+- [ ] Fill in `entrypoints/welcome/config.ts` (value prop, steps, links) — see `docs/10-onboarding.md`
 - [ ] `npm run dev` -- verify all entry points load
 - [ ] Remove any entry points you end up not using before submission

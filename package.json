@@ -9,9 +9,13 @@
     "dev:firefox": "wxt -b firefox",
     "build": "wxt build",
     "build:firefox": "wxt build -b firefox",
-    "zip": "wxt zip",
+    "zip": "npm run check:cws:ship && wxt zip",
     "zip:firefox": "wxt zip -b firefox",
     "compile": "tsc --noEmit",
+    "check:cws": "wxt build && tsx scripts/validate-cws.ts",
+    "check:cws:ship": "wxt build && tsx scripts/validate-cws.ts --ship",
+    "capture:source": "tsx sources/_scripts/capture.ts",
+    "index:sources": "tsx sources/_scripts/build-index.ts",
     "postinstall": "wxt prepare"
   },
   "dependencies": {
@@ -20,12 +24,21 @@
     "react-dom": "^19.2.4"
   },
   "devDependencies": {
+    "@mozilla/readability": "^0.6.0",
     "@tailwindcss/vite": "^4.2.2",
+    "@types/js-yaml": "^4.0.9",
+    "@types/jsdom": "^28.0.1",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "@types/turndown": "^5.0.6",
     "@wxt-dev/auto-icons": "^1.1.1",
     "@wxt-dev/module-react": "^1.1.5",
+    "js-yaml": "^4.1.1",
+    "jsdom": "^29.0.2",
+    "playwright": "^1.59.1",
     "tailwindcss": "^4.2.2",
+    "tsx": "^4.21.0",
+    "turndown": "^7.2.4",
     "typescript": "^5.9.3",
     "wxt": "^0.20.22"
   }
