@@ -107,6 +107,24 @@ The validator doesn't know Claude exists. It emits stable rule ids. The skill ma
 - **Validator rules may be async.** A rule function returns `Finding[] | Promise<Finding[]>`. Async rules exist for checks that hit the network (`listing-drift`). If the network call fails, the rule should return `[]` with a note to stderr — never fail the validator on a transient CWS / connectivity issue.
 - **`--json` envelope shape is shared across scripts.** `scripts/validate-cws.ts`, `scripts/version-sync.ts`, and `scripts/publish-cws.ts` all emit `schemaVersion: 1` envelopes. Additive-only: new fields OK, renaming / removing requires a `schemaVersion` bump.
 
+### Skill conventions
+
+Conventions for how skills are laid out, what they can assume, and how they interact with the scripted substrate. Established in Session 2 (cws-content) and applies to every subsequent skill.
+
+- **Location.** Skills live at `/skills/<skill-name>/SKILL.md`. The directory may hold extra files (templates, reference prompts) but `SKILL.md` is the canonical entry point. See `/skills/README.md` for the browsable index.
+- **Frontmatter.** Each `SKILL.md` opens with an optional YAML frontmatter block. Recognized fields:
+  - `name` — matches the directory name. Used as the skill's public identifier.
+  - `description` — one-paragraph summary of what the skill does and when it applies.
+  - `triggers` — list of natural-language invocation hints ("user wants to fill in listing copy", "ship mode validator is red"). Not regex; guidance for the model deciding whether to invoke.
+  - `invokes` — scripts/commands the skill calls. Documents the skill's dependencies on the scripted substrate.
+  - `writes` — files the skill is permitted to modify. The skill must not touch any file not in this list.
+  The body of the file is the prompt presented to Claude when the skill is invoked. Write it as instructions to Claude, not as documentation for humans.
+- **Skills read `--json` from scripts; they never re-implement deterministic checks.** If you're tempted to re-derive "is this ship-ready" inside a skill, stop — that logic belongs in `scripts/validate-cws.ts` and the skill consumes its findings.
+- **Skills key off stable `rule` ids, not human-readable messages.** `finding.rule` is the contract; `finding.message` is for humans and may be reworded. Branching on message text is a latent bug.
+- **Recipe pattern.** When a skill handles multiple related errors, it dispatches to named recipes — one rule id maps to one conversational flow. Recipes are the unit of reuse: `cws-ship` (Session 3) invokes the same recipe definitions as `cws-content` rather than duplicating them.
+- **Skills must re-run the relevant validator after each file write.** If the rule id that triggered the recipe still appears in findings, the write didn't match what the rule checks. Show the user the output and ask — don't loop blindly.
+- **One conversational responsibility per skill.** Sub-skills are cheap; mega-skills become dumping grounds. Splitting cws-content (fills copy) from cws-ship (submits) keeps each coherent.
+
 ---
 
 ## How to extend
@@ -147,7 +165,7 @@ Each of these follows the principle above: the deterministic piece lives in a sc
 | ~~`npm run ship`~~ | Gate | **Done (Session 1).** `check:cws:ship && version-sync && wxt zip && publish-cws`. First halt wins. |
 | ~~`listing-drift` validator rule~~ | Script rule | **Done (Session 1).** Warn-severity; ship-only; returns `[]` without secrets (factory invariant preserved). |
 | `cws-ship` skill | Skill | Orchestrates the full submission flow using `--json` output. Maps each rule id to a conversational fix recipe. |
-| `cws-content` skill | Skill | Elicits name, description, value prop, justifications, privacy policy URL. Writes to `wxt.config.ts` + `entrypoints/welcome/config.ts`. Runs validator to confirm. |
+| `cws-content` skill | Skill | **Done (Session 2).** Lives at `/skills/cws-content/SKILL.md`. Elicits name, description, value prop, justifications, privacy policy URL. Writes to `wxt.config.ts` + `entrypoints/welcome/config.ts`. Runs validator to confirm. See "Skill conventions" above for the `/skills/<name>/SKILL.md` layout Sessions 3-5 will follow. |
 | `cws-screens` skill + repo infrastructure | Skill + Script | Next.js page with browser-chrome frame, 1280×800 export. Distinct from the iOS `app-store-screenshots` skill. Separate conversation — screenshots iterate independently of listing copy. |
 | `cws-init` skill | Skill | First-time setup: clone, name, OAuth secrets walkthrough, first `cws-content` pass. |
 
