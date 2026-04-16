@@ -14,6 +14,8 @@
     "compile": "tsc --noEmit",
     "check:cws": "wxt build && tsx scripts/validate-cws.ts",
     "check:cws:ship": "wxt build && tsx scripts/validate-cws.ts --ship",
+    "version-sync": "tsx scripts/version-sync.ts",
+    "ship": "npm run check:cws:ship && tsx scripts/version-sync.ts && wxt zip && tsx scripts/publish-cws.ts",
     "capture:source": "tsx sources/_scripts/capture.ts",
     "index:sources": "tsx sources/_scripts/build-index.ts",
     "postinstall": "wxt prepare"
@@ -33,6 +35,7 @@
     "@types/turndown": "^5.0.6",
     "@wxt-dev/auto-icons": "^1.1.1",
     "@wxt-dev/module-react": "^1.1.5",
+    "chrome-webstore-upload": "^4.0.3",
     "js-yaml": "^4.1.1",
     "jsdom": "^29.0.2",
     "playwright": "^1.59.1",
