@@ -44,3 +44,4 @@ screenshots/.next
 *.sln
 *.sw?
 .claude/worktrees/
+.output/videos/

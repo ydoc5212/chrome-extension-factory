@@ -14,6 +14,7 @@ triggers:
 invokes:
   - "cws-content"                                      # skill delegation for listing copy (Phase D)
   - "cws-screens"                                      # skill delegation for screenshots (Phase E, optional)
+  - "cws-video"                                        # skill delegation for launch video (Phase E2, optional)
   - "npm run check:cws"                                # structural validator (Phase G)
   - "npx wxt prepare"                                  # regenerate WXT types after profile-strip (Phase C)
 writes:
@@ -226,6 +227,26 @@ If yes: invoke `cws-screens` and wait for it to report back. Like Phase D, do NO
 If skip: note that `ship-ready-screenshots` will stay red until the user runs `cws-screens` later. That's fine; the factory allows shipping-adjacent states. Move on.
 
 **If `screenshots/` was deleted** (the user stripped it previously — cws-init doesn't delete it in Phase C, but it may have been removed in a prior session): skip this phase silently. Don't tell the user to re-add it; if they wanted screenshots they'd have kept the subproject.
+
+---
+
+## Phase E2 — Launch video (default-on)
+
+The factory ships a launch-video workflow by default. Taste decision documented in ARCHITECTURE.md: CWS listings with a promo video convert markedly better, and the same asset doubles as a launch asset for ProductHunt / Twitter / LinkedIn. One asset, many surfaces.
+
+Check whether `video/` still exists at the repo root.
+
+**If `video/` exists**: offer to delegate to `cws-video`:
+
+> Want to scaffold a launch video now? I'll hand off to the `cws-video` skill. It'll interview you for a 30-second hook + beats, then invoke `heygen-com/hyperframes` (an external skill — `npx skills add heygen-com/hyperframes` if you haven't) to generate the actual video. The same file works for CWS embed, ProductHunt, and socials.
+>
+> yes / skip
+
+If yes: invoke `cws-video` and wait for it to report back. Do NOT duplicate its recipes. If `cws-video`'s Phase A reports hyperframes is missing and the user opts to defer the install, accept that — cws-video handles the graceful skip.
+
+If skip: note that `ship-ready-video` will stay red until the user runs `cws-video` later. That's fine; matches how screenshots work.
+
+**If `video/` was deleted** (the user genuinely doesn't want a video — explicit opt-out): skip this phase silently. The `ship-ready-video` rule no-ops on absent `video/`, matching the `screenshots/` escape hatch.
 
 ---
 

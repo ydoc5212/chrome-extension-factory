@@ -53,7 +53,7 @@ The body of the file is the prompt Claude sees when the skill is invoked. Write 
 | `cws-screens` | shipped (Session 4) | `/skills/cws-screens/SKILL.md` | Walk user through 5 CWS-compliant screenshots via the `screenshots/` subproject. |
 | `cws-ship` | shipped (Session 3) | `/skills/cws-ship/SKILL.md` | Orchestrate full submission flow: delegate to cws-content / cws-screens, version-sync, zip, submit, poll, rejection-recovery. |
 | `cws-init` | shipped (Session 5) | `/skills/cws-init/SKILL.md` | First-time onboarding: profile selection, initial cws-content pass, optional cws-screens, optional OAuth setup. |
-| `cws-video` | planned | — | Wraps `heygen-com/hyperframes` for CWS launch-video generation. See External dependencies. |
+| `cws-video` | shipped (Session 6) | `/skills/cws-video/SKILL.md` | Wraps `heygen-com/hyperframes` for CWS launch-video generation. Default-on workflow. See External dependencies. |
 
 ## External dependencies
 
@@ -65,7 +65,7 @@ npx skills add <namespace>/<skill-name>
 
 | External skill | Install | Classification | Wrapped by | Purpose |
 |---|---|---|---|---|
-| `heygen-com/hyperframes` | `npx skills add heygen-com/hyperframes` | **Required** (default ship path) | `cws-video` (planned, Session 6) | Launch video generation for CWS listings. Taste decision: video is on by default because extensions with videos convert markedly better and the asset doubles for ProductHunt / Twitter / LinkedIn launches. Users who genuinely don't want a video delete `video/` to opt out. |
+| `heygen-com/hyperframes` | `npx skills add heygen-com/hyperframes` | **Required** (default ship path) | `cws-video` (shipped, Session 6) | Launch video generation for CWS listings. Taste decision: video is on by default because extensions with videos convert markedly better and the asset doubles for ProductHunt / Twitter / LinkedIn launches. Users who genuinely don't want a video delete `video/` to opt out. |
 
 ### Classification: Required vs. Optional
 

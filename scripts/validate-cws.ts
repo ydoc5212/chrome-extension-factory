@@ -683,6 +683,75 @@ function shipReadyScreenshots(_ctx: Context): Finding[] {
   return [];
 }
 
+// Ship-only: the `video/` subproject is the declarative CWS launch-video
+// generator (see `video/config.ts`). Parallels shipReadyScreenshots exactly.
+// Taste decision: video is on by default — extensions with a promo video
+// convert markedly better, and the same asset doubles for ProductHunt /
+// Twitter / LinkedIn launches. Users who genuinely don't want a video delete
+// `video/` entirely — the rule no-ops on absent directory, same escape-hatch
+// as screenshots. See ARCHITECTURE.md → "Planned extensions" → cws-video.
+const VIDEO_CONFIG_PATH = join(ROOT, 'video', 'config.ts');
+const VIDEO_OUTPUT_DIR = join(ROOT, '.output', 'videos');
+const VIDEO_PLACEHOLDERS = [
+  'Your killer feature here',
+  'your-extension-name',
+  'Replace this copy before shipping',
+] as const;
+const VIDEO_EXTENSIONS = ['.mp4', '.webm', '.mov'] as const;
+
+function shipReadyVideo(_ctx: Context): Finding[] {
+  // Subproject removed entirely → no-op. Explicit opt-out, same as
+  // shipReadyScreenshots / welcomeConfigReadyForSubmission.
+  if (!existsSync(VIDEO_CONFIG_PATH)) return [];
+
+  // One finding at a time, same ordering as shipReadyScreenshots:
+  //   (a) No exported video in .output/videos/ → tell the user to run
+  //       `/cws-video` (the skill that wraps heygen-com/hyperframes).
+  //   (b) Video exists but config still has placeholders → those videos are
+  //       factory-template output; regenerate with real copy.
+  const hasVideo =
+    existsSync(VIDEO_OUTPUT_DIR) &&
+    readdirSync(VIDEO_OUTPUT_DIR).some((f) => {
+      const lower = f.toLowerCase();
+      return VIDEO_EXTENSIONS.some((ext) => lower.endsWith(ext));
+    });
+
+  if (!hasVideo) {
+    return [
+      {
+        rule: 'ship-ready-video',
+        severity: 'error',
+        message: `.output/videos/ has no exported video (${VIDEO_EXTENSIONS.join(', ')})`,
+        why: 'A launch video substantially lifts CWS install conversion, and doubles as a launch asset for ProductHunt / Twitter / LinkedIn. The factory ships video on by default because the same asset pays off on multiple surfaces.',
+        source: 'https://developer.chrome.com/docs/webstore/best-listing',
+        fix: 'Invoke the `/cws-video` skill to generate a video from `video/config.ts` (wraps `heygen-com/hyperframes`). Or delete `video/` if you genuinely don\'t want a promo video.',
+      },
+    ];
+  }
+
+  const configSource = readFileSync(VIDEO_CONFIG_PATH, 'utf8');
+  const stuckPlaceholders = VIDEO_PLACEHOLDERS.filter((p) =>
+    configSource.includes(p),
+  );
+
+  if (stuckPlaceholders.length > 0) {
+    return [
+      {
+        rule: 'ship-ready-video',
+        severity: 'error',
+        message: `video/config.ts still has factory placeholder(s): ${stuckPlaceholders
+          .map((p) => `"${p}"`)
+          .join(', ')}`,
+        why: 'Shipping with factory-default video copy produces a promo video with placeholder narration — worse than no video at all. The video is the first impression on CWS detail pages.',
+        source: 'https://developer.chrome.com/docs/webstore/best-listing',
+        fix: 'Edit `video/config.ts` with real hook, beats, and extension name, then re-invoke `/cws-video` to regenerate.',
+      },
+    ];
+  }
+
+  return [];
+}
+
 // ---------- Runner ----------
 
 // Rule functions may be sync OR async. Async rules are used for checks
@@ -711,6 +780,7 @@ const SHIP_ONLY_RULES: RuleFn[] = [
   welcomeConfigReadyForSubmission,
   listingDrift,
   shipReadyScreenshots,
+  shipReadyVideo,
 ];
 
 async function main() {

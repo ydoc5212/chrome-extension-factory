@@ -1,15 +1,16 @@
 # Launch Materials
 
-Screenshots are the single biggest conversion asset on the Chrome Web Store tile. This doc is the index to the two screenshot pipelines the factory ships.
+Screenshots and a launch video are the two biggest conversion assets on the Chrome Web Store tile. This doc is the index to the three generation pipelines the factory ships.
 
-## Two pipelines, two audiences
+## Three pipelines, three audiences
 
-| Pipeline | Target | Skill | Repo location |
-|---|---|---|---|
-| **Chrome Web Store screenshots** | Chrome extension listing on CWS | `/cws-screens` | `screenshots/` |
-| **iOS App Store screenshots** | Companion iOS app on the App Store | `/app-store-screenshots` | `marketing/` |
+| Pipeline | Target | Skill | Repo location | Default |
+|---|---|---|---|---|
+| **Chrome Web Store screenshots** | Chrome extension listing on CWS | `/cws-screens` | `screenshots/` | on |
+| **Chrome Web Store launch video** | CWS listing embed + ProductHunt / Twitter / LinkedIn | `/cws-video` | `video/` | on |
+| **iOS App Store screenshots** | Companion iOS app on the App Store | `/app-store-screenshots` | `marketing/` | skill-managed |
 
-These are **parallel, not interchangeable.** They have different dimensions, different aesthetics, different conversion goals. Don't try to use one for the other.
+These are **parallel, not interchangeable.** Different dimensions, different aesthetics, different conversion goals. Don't try to use one pipeline's output as input to another.
 
 - **CWS** is desktop, 1280×800, with a browser-chrome frame. Typography is restrained. The screenshot frames an extension surface (popup, sidepanel, options, welcome, or content script on a real page).
 - **App Store** is mobile, iPhone/iPad mockups, with app-advertising typography (large, bold, gradient backgrounds). It frames an iOS app screen.
@@ -66,6 +67,49 @@ The factory ships 5 placeholder entries with obviously-fake copy (`"Your killer 
 ### Stripping the pipeline
 
 If you'd rather produce screenshots manually (Figma, CleanShot, whatever) and skip the skill, just delete the `screenshots/` folder. The `ship-ready-screenshots` validator rule no-ops when the folder is missing. You'll still be responsible for producing at least one 1280×800 PNG before submitting.
+
+---
+
+## Chrome Web Store launch video (default-on)
+
+### At a glance
+
+| Item | Spec |
+|---|---|
+| Skill | `/cws-video` |
+| Config | `video/config.ts` (declarative) |
+| External dep | `heygen-com/hyperframes` — install with `npx skills add heygen-com/hyperframes` |
+| Output dir | `.output/videos/` (gitignored) |
+| Validator rule | `ship-ready-video` (SHIP_ONLY, fails on a fresh clone) |
+| Escape hatch | `rm -rf video/` — rule no-ops on absent directory |
+
+### Why video ships on by default
+
+CWS listings with an embedded promo video convert meaningfully better than listings without. The same asset pulls weight on ProductHunt, Twitter, and LinkedIn at launch — one production run, many surfaces. Factory default: video is on. Users who genuinely don't want one delete the `video/` directory (same escape hatch as `screenshots/`).
+
+### Length targets
+
+| Target | Length | Use |
+|---|---|---|
+| CWS embed | 30 sec | YouTube upload, embedded in the CWS listing detail panel. Hard cap. |
+| ProductHunt launch | 60 sec | Attached to PH launch. Longer breathing room. |
+| Social horizontal (Twitter/LinkedIn) | 60 sec MP4, 16:9 | |
+| Social vertical (Instagram/TikTok/Shorts) | 30 sec MP4, 9:16 | Only if targeting those channels |
+
+Hyperframes generates all four from one `video/config.ts`. `exports` field controls which targets it actually produces.
+
+### Workflow
+
+1. Install hyperframes: `npx skills add heygen-com/hyperframes` (one-time, per-user).
+2. Invoke `/cws-video`. The skill interviews you for hook + beats + exports, writes `video/config.ts`, and hands off to hyperframes to render.
+3. Verify `.output/videos/` contains your exports.
+4. `npm run check:cws:ship` should no longer fire `ship-ready-video`.
+
+See `/skills/cws-video/SKILL.md` for the full recipe, worked example, and failure-mode table.
+
+### Separate from the iOS workflow
+
+Do not conflate with the `/app-store-screenshots` skill — that's for iOS App Store screenshots, different asset class entirely. And there is no iOS video pipeline in this factory; if you ship a companion iOS app, the App Store's video requirements are handled separately.
 
 ---
 

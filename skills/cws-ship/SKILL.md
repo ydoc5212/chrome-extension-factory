@@ -1,6 +1,6 @@
 ---
 name: cws-ship
-description: Orchestrate the full Chrome Web Store submission flow — gate on ship-mode validator, reconcile version, summarize, submit via `npm run ship`, and interpret the terminal state (live / in-review / rejected / failed / timeout). Delegates content fixes to `cws-content` and screenshot fixes to `cws-screens` rather than duplicating their recipes. Does NOT implement any deterministic checks itself; it reads `--json` from the existing scripts.
+description: Orchestrate the full Chrome Web Store submission flow — gate on ship-mode validator, reconcile version, summarize, submit via `npm run ship`, and interpret the terminal state (live / in-review / rejected / failed / timeout). Delegates content fixes to `cws-content`, screenshot fixes to `cws-screens`, and video fixes to `cws-video` rather than duplicating their recipes. Does NOT implement any deterministic checks itself; it reads `--json` from the existing scripts.
 triggers:
   - "user says `ship it` / `publish` / `submit to the Chrome Web Store`"
   - "user asks `is this ready to go live`"
@@ -17,6 +17,7 @@ invokes:
   - "npm version patch"                       # offered to user, never run silently
   - "<skill>cws-content</skill>"              # delegate content rule fixes
   - "<skill>cws-screens</skill>"              # delegate screenshot rule fixes
+  - "<skill>cws-video</skill>"                # delegate video rule fixes
 writes:
   # cws-ship is the orchestration layer. It does not directly edit user code.
   # The two files below are touched only as side effects of tools it runs:
@@ -90,6 +91,7 @@ For each entry in `findings` where `severity === "error"`, route by `rule`:
 | `ship-ready-optional-host` | content (cws-content) | **Delegate to `cws-content`** |
 | `ship-ready-welcome-config` | content (cws-content) | **Delegate to `cws-content`** |
 | `ship-ready-screenshots` | screenshots (cws-screens) | **Delegate to `cws-screens`** |
+| `ship-ready-video` | video (cws-video) | **Delegate to `cws-video`** |
 | anything else (structural: `host-permissions-breadth`, `content-scripts-matches-breadth`, `unused-permission`, `csp-extension-pages`, `remote-code-patterns`, `offscreen-missing-justification`, `listing-fields-present`, etc.) | out of cws-ship scope | **STOP.** Surface the finding verbatim and tell the user to fix it themselves. |
 
 **How to delegate.** For the content cluster (any of `listing-ready-name`, `listing-ready-description`, `ship-ready-optional-host`, `ship-ready-welcome-config`), tell the user:
@@ -102,7 +104,11 @@ For `ship-ready-screenshots`, analogous:
 
 > Screenshots aren't ready. Handing off to `cws-screens` — it'll walk you through the 5-screenshot deck and regenerate PNGs. When it reports done, I'll re-run the validator.
 
-**Do not duplicate cws-content's or cws-screens' recipes in this skill.** Those recipes are the unit of reuse. Keep the delegation explicit: name the other skill, name the rule ids you're delegating, resume only when the other skill reports green on those rules.
+For `ship-ready-video`, analogous:
+
+> The launch video isn't ready. Handing off to `cws-video` — it'll interview you for hook/beats and invoke `heygen-com/hyperframes` to generate the exports. When it reports done, I'll re-run the validator. (If you'd rather ship without a video, delete `video/` — the rule no-ops on an absent directory.)
+
+**Do not duplicate cws-content's, cws-screens', or cws-video's recipes in this skill.** Those recipes are the unit of reuse. Keep the delegation explicit: name the other skill, name the rule ids you're delegating, resume only when the other skill reports green on those rules.
 
 ### A.3 Handle `listing-drift` (warning)
 
