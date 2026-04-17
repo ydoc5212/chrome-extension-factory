@@ -34,8 +34,8 @@ The hub. Every other venue cross-links here. All **(auto --render)** — Playwri
 - [x] **`k5upFLVnPqE`** — captured 2026-04-16 via `--render`. Title: "MV3, (inactive) service workers, and alarms". File: `forums/2026-04-16_google-group_sw-event-listeners-top-level.md`.
 - [x] **`BrwVKyIvCMs`** — captured 2026-04-16 via `--render`. Title: "Extension review time. How to improve it?". File: `forums/2026-04-16_google-group_review-times-deferred-publishing.md`.
 - [x] **`POU6sW-I39M`** — captured 2026-04-16 via `--render`. Title: "MV3 service worker broken after auto-update". 86KB rendered (80+ posts). File: `forums/2026-04-16_google-group_auto-update-sw-race-condition.md`.
-- [ ] **Rejection-code sweep** — for each code below, Google `site:groups.google.com/a/chromium.org/g/chromium-extensions "<code>"` and capture the top 1–2 hits with **(auto --render)**. Codes: Blue Argon, Blue Nickel, Blue Potassium, Purple Lithium, Purple Nickel, Purple Magnesium, Purple Copper, Red Titanium, Red Zinc, Red Nickel, Red Potassium, Red Silicon, Yellow Zinc, Yellow Argon, Yellow Lithium, Yellow Nickel, Yellow Potassium, Grey Titanium.
-- [ ] **Oliver Dunk recent responses** — if the Group search supports filtering by poster, capture top 5 recent. Otherwise grep from the first few rejection-code captures for his replies and follow the thread IDs. **(auto --render)**
+- [x] **Rejection-code sweep** — captured + extracted 2026-04-17. 8 substantive threads found across Purple Nickel (2), Red Titanium, Red Potassium, Yellow Lithium, Yellow Nickel (2), Yellow Potassium. **Negative finding:** 10 of 16 target codes have zero indexed Group discussion (Blue Nickel, Blue Potassium, Purple Lithium, Purple Magnesium, Purple Copper, Red Zinc, Red Nickel, Red Silicon, Yellow Argon, Grey Titanium) — likely either rarely triggered, recently introduced, or resolved quietly via One Stop Support. Codes with hits tend to be the ambiguous-application ones.
+- [x] **Oliver Dunk recent responses** — captured + extracted 2026-04-17. 5 threads: Chrome 144 messaging PSA (Nov 2025), CWS review-timing (Jan 2026, no expedited path exists), MV3 transition resumption PSA (Nov 2023 debut), VirusTotal-clean-≠-CWS-compliant (Apr 2025), MV3→MV2 rollback requires prior MV2 history (Jan 2025).
 
 ## Batch 3 — Tier-S blog: Wladimir Palant (Almost Secure)
 
@@ -44,8 +44,7 @@ The hub. Every other venue cross-links here. All **(auto --render)** — Playwri
 - [x] **"Chrome Web Store is a mess"** (Jan 13 2025) — captured. File: `blogs/2026-04-16_palant_01-13-chrome-web-store-is-a-mess.md`.
 - [x] **"Malicious extensions circumvent Google's remote code ban"** (Jan 20 2025) — captured. File: `blogs/2026-04-16_palant_01-20-malicious-extensions-circumvent-googles-remote-code-ba.md`.
 - [x] **BONUS: "Analysis of an advanced malicious Chrome extension"** (Feb 3 2025) — captured as part of the same Palant CWS-security series. File: `blogs/2026-04-16_palant_02-03-analysis-of-an-advanced-malicious-chrome-extension.md`.
-- [ ] **His extension-tag post index** — capture as a reference page to surface follow-up posts. **(auto)**
-  URL: https://palant.info/categories/add-ons/
+- [x] **His extension-tag post index** — captured + extracted 2026-04-17 as `blogs/2026-04-17_palant_categories-add-ons.md`. Extraction nominates 5 follow-up candidates: CWS-search-trick post (Jan 2025), BIScience false-pretenses post (Jan 2025), web-accessible-resources attack-surface post (Aug 2022), PDF Toolbox teardown (May 2023, now captured in Batch 6.5), and "how malicious extensions hide running arbitrary code" (Jun 2023).
 
 ## Batch 4 — Tier-S blog: Matt Frisbie
 
@@ -53,7 +52,7 @@ Author of the only up-to-date book on browser extensions (2nd ed. Sept 2025). Pr
 
 - [x] **Frisbie Substack — 3-part malicious extension series.** Captured + extracted 2026-04-17. **Finding:** parts 1–3 are teaser announcements pointing to external partner content (Spin.AI guest essay, LayerX webinar, Seraphic Security webinar); substantive content is OFF-substack. The extractions name Cyberhaven, ChromeLoader, PDF Toolbox, Dataspii as breach cases discussed in partner content. **Follow-up discovery targets:** the Spin.AI essay, LayerX webinar, Seraphic webinar, and the named breach writeups.
 - [x] **Frisbie — "Tracking Browser Extension Ownership"** — captured + extracted. File: `blogs/2026-04-17_frisbie-substack_tracking-extension-ownership.md`, `extracted/2026-04-17_frisbie-substack_tracking-extension-ownership.md`. Names Under-New-Management tool + WECG API proposal.
-- [ ] **`buildingbrowserextensions.com`** — if a blog exists at the book's site, capture the extension-specific posts.
+- [x] **`buildingbrowserextensions.com`** — checked 2026-04-17. **Negative finding:** no independent blog exists; the "BLOG" nav link redirects to `mattfrisbie.substack.com` (already captured). Documented as extraction-only at `extracted/2026-04-17_buildingbrowserextensions_negative-finding.md`.
 
 ## Batch 5 — Tier-S blog: Coditude (Hrishikesh Kale)
 
@@ -68,6 +67,18 @@ Agency owner, 40+ extension posts, strong 2024–2025 cadence.
 - [x] **"MAIN content script is like James Bond"** — captured + extracted 2026-04-17. bashvlas is SSR so plain fetch works. Signal: MAIN world trade-off (page globals + fetch hook vs. chrome.* APIs).
 - [x] **"Update without review"** — captured + extracted 2026-04-17. Signal: Google-recommended remote-configuration pattern (data, not code) for adding supported sites without re-review.
 - [x] **`bashvlas.com/blog` index** — captured + extracted 2026-04-17. Extraction surfaces 5 high-priority titles as next-pass capture candidates.
+
+## Batch 6.5 — Frisbie follow-up targets
+
+Surfaced from the Batch 4 Frisbie 3-part series extractions — the substantive content lives OFF-substack in partner pieces and named breach writeups.
+
+- [x] **Spin.AI guest essay** — captured + extracted 2026-04-17 as `blogs/2026-04-17_spinai_unpacking-browser-extension-threat-model.md`.
+- [x] **LayerX webinar** — captured + extracted 2026-04-17. Recording form-walled; abstract/speakers captured from public landing page. Treated as a pointer source.
+- [x] **Seraphic Security webinar** — captured + extracted 2026-04-17. Same pattern as LayerX.
+- [x] **Cyberhaven breach writeup** — captured + extracted 2026-04-17 as `blogs/2026-04-17_darktrace_cyberhaven-supply-chain-attack-browser-extensions.md`. **Negative finding:** official Cyberhaven post-mortem URLs (`cyberhaven.com/engineering-blog/*`) are dead; Darktrace analysis used as substitute since it cites the original preliminary analysis directly.
+- [x] **ChromeLoader writeup** — captured + extracted 2026-04-17 as `blogs/2026-04-17_redcanary_chromeloader-pushy-malvertiser.md`.
+- [x] **PDF Toolbox writeup** — captured + extracted 2026-04-17 as `blogs/2026-04-17_palant_malicious-code-pdf-toolbox-extension.md`.
+- [x] **Dataspii writeup** — captured + extracted 2026-04-17 as `blogs/2026-04-17_securitywithsam_dataspii-leak-via-browser-extensions.md` (full 130KB technical report).
 
 ## Batch 7 — Tier-A blogs: known cited, promote to captures
 

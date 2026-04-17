@@ -2,7 +2,7 @@
 
 # Sources by Date
 
-44 captures, newest first. Regenerate with `npm run index:sources`.
+87 captures, newest first. Regenerate with `npm run index:sources`.
 
 ## 2026-04-17
 
@@ -15,10 +15,31 @@
 - [Purple Potassium: How to Correct Permission Abuse in Chrome Extensions](../blogs/2026-04-17_coditude_purple-potassium-permissions.md) **(c)** · _blog_
 - [Chrome Web Store Rejection Codes: Meaning & Fixes](../blogs/2026-04-17_coditude_rejection-codes-overview.md) **(c)** · _blog_
 - [Yellow Zinc: Chrome Extension Violations for Metadata and Listing Issues](../blogs/2026-04-17_coditude_yellow-zinc-metadata.md) **(c)** · _blog_
+- [Cyberhaven Supply Chain Attack: Exploiting Browser Extensions](../blogs/2026-04-17_darktrace_cyberhaven-supply-chain-attack-browser-extensions.md) **(c)** · _blog_
 - [Let's Talk About Malicious Browser Extensions: Part 1](../blogs/2026-04-17_frisbie-substack_malicious-extensions-part-1.md) **(c)** · _blog_
 - [Let's Talk About Malicious Browser Extensions: Part 2](../blogs/2026-04-17_frisbie-substack_malicious-extensions-part-2.md) **(c)** · _blog_
 - [Let's Talk About Malicious Browser Extensions: Part 3](../blogs/2026-04-17_frisbie-substack_malicious-extensions-part-3.md) **(c)** · _blog_
 - [Tracking Browser Extension Ownership - by Matt Frisbie](../blogs/2026-04-17_frisbie-substack_tracking-extension-ownership.md) **(c)** · _blog_
+- [Stopping Malicious Browser Extensions: Understand and Mitigate the Risk in Enterprise Environments](../blogs/2026-04-17_layerx_webinar-stopping-malicious-browser-extensions.md) **(c)** · _blog_
+- [Categories: Add-Ons | Almost Secure](../blogs/2026-04-17_palant_categories-add-ons.md) **(c)** · _blog_
+- [Malicious code in PDF Toolbox extension | Almost Secure](../blogs/2026-04-17_palant_malicious-code-pdf-toolbox-extension.md) **(c)** · _blog_
+- [ChromeLoader: a pushy malvertiser](../blogs/2026-04-17_redcanary_chromeloader-pushy-malvertiser.md) **(c)** · _blog_
+- [DataSpii - A global catastrophic data leak via browser extensions](../blogs/2026-04-17_securitywithsam_dataspii-leak-via-browser-extensions.md) **(c)** · _blog_
+- [The Unreasonable Effectiveness of Malicious Browser Extensions](../blogs/2026-04-17_seraphic_webinar-unreasonable-effectiveness-malicious-extensions.md) **(c)** · _blog_
+- [Unpacking the Browser Extension Threat Model | Spin.AI](../blogs/2026-04-17_spinai_unpacking-browser-extension-threat-model.md) **(c)** · _blog_
+- [CWS review timing – Chromium 144 messaging API breaking change](../forums/2026-04-17_google-group_oliver-dunk-cws-review-timing-chrome144.md) **(b)** · _forum_
+- [Extension Removed Due to Misunderstanding of Its Functionality](../forums/2026-04-17_google-group_oliver-dunk-extension-removed-misunderstanding.md) **(b)** · _forum_
+- [PSA: Messaging API Changes for Chromium Extension Developers](../forums/2026-04-17_google-group_oliver-dunk-psa-messaging-api-changes-chrome144.md) **(b)** · _forum_
+- [PSA: Resuming the transition to Manifest V3](../forums/2026-04-17_google-group_oliver-dunk-psa-resuming-mv3-transition.md) **(b)** · _forum_
+- [Rolling back from MV3 to MV2](../forums/2026-04-17_google-group_oliver-dunk-rollback-mv3-to-mv2.md) **(b)** · _forum_
+- [Clarify about 'Purple Nickel' issue (chrome team help requested)](../forums/2026-04-17_google-group_purple-nickel-privacy-policy-clarify.md) **(b)** · _forum_
+- [Purple Nickel rejection](../forums/2026-04-17_google-group_purple-nickel-rejection.md) **(b)** · _forum_
+- [Extension rejected with Violation ID Red Potassium](../forums/2026-04-17_google-group_red-potassium-listing-inconsistency.md) **(b)** · _forum_
+- [Red Titanium Code Obfuscation warning -- I'm confused by it](../forums/2026-04-17_google-group_red-titanium-obfuscation-minify-confusion.md) **(b)** · _forum_
+- [8 Year old Chrome Extension TakeDown without any Warning.](../forums/2026-04-17_google-group_yellow-lithium-launcher-policy-takedown.md) **(b)** · _forum_
+- [Yellow Nickel Rejection](../forums/2026-04-17_google-group_yellow-nickel-rejection-spam-metadata.md) **(b)** · _forum_
+- [The extension has been flagged as Yellow Nickel label, but only update language package.](../forums/2026-04-17_google-group_yellow-nickel-spam-language-pack.md) **(b)** · _forum_
+- [Re: Extension rejected with Violation ID Purple Potassium](../forums/2026-04-17_google-group_yellow-potassium-minimum-functionality.md) **(b)** · _forum_
 
 ## 2026-04-16
 
@@ -46,13 +67,35 @@
 - [extracted/2026-04-17_bashvlas_blog-index.md](../extracted/2026-04-17_bashvlas_blog-index.md) **(c)**
 - [extracted/2026-04-17_bashvlas_main-content-script-james-bond.md](../extracted/2026-04-17_bashvlas_main-content-script-james-bond.md) **(c)**
 - [extracted/2026-04-17_bashvlas_update-without-review.md](../extracted/2026-04-17_bashvlas_update-without-review.md) **(c)**
+- [extracted/2026-04-17_buildingbrowserextensions_negative-finding.md](../extracted/2026-04-17_buildingbrowserextensions_negative-finding.md) **(d)**
 - [extracted/2026-04-17_coditude_blue-argon-mv3.md](../extracted/2026-04-17_coditude_blue-argon-mv3.md) **(c)**
 - [extracted/2026-04-17_coditude_blue-series-prohibited-products.md](../extracted/2026-04-17_coditude_blue-series-prohibited-products.md) **(c)**
 - [extracted/2026-04-17_coditude_purple-family-privacy.md](../extracted/2026-04-17_coditude_purple-family-privacy.md) **(c)**
 - [extracted/2026-04-17_coditude_purple-potassium-permissions.md](../extracted/2026-04-17_coditude_purple-potassium-permissions.md) **(c)**
 - [extracted/2026-04-17_coditude_rejection-codes-overview.md](../extracted/2026-04-17_coditude_rejection-codes-overview.md) **(c)**
 - [extracted/2026-04-17_coditude_yellow-zinc-metadata.md](../extracted/2026-04-17_coditude_yellow-zinc-metadata.md) **(c)**
+- [extracted/2026-04-17_darktrace_cyberhaven-supply-chain-attack-browser-extensions.md](../extracted/2026-04-17_darktrace_cyberhaven-supply-chain-attack-browser-extensions.md) **(c)**
 - [extracted/2026-04-17_frisbie-substack_malicious-extensions-part-1.md](../extracted/2026-04-17_frisbie-substack_malicious-extensions-part-1.md) **(c)**
 - [extracted/2026-04-17_frisbie-substack_malicious-extensions-part-2.md](../extracted/2026-04-17_frisbie-substack_malicious-extensions-part-2.md) **(c)**
 - [extracted/2026-04-17_frisbie-substack_malicious-extensions-part-3.md](../extracted/2026-04-17_frisbie-substack_malicious-extensions-part-3.md) **(c)**
 - [extracted/2026-04-17_frisbie-substack_tracking-extension-ownership.md](../extracted/2026-04-17_frisbie-substack_tracking-extension-ownership.md) **(c)**
+- [extracted/2026-04-17_google-group_oliver-dunk-cws-review-timing-chrome144.md](../extracted/2026-04-17_google-group_oliver-dunk-cws-review-timing-chrome144.md) **(b)**
+- [extracted/2026-04-17_google-group_oliver-dunk-extension-removed-misunderstanding.md](../extracted/2026-04-17_google-group_oliver-dunk-extension-removed-misunderstanding.md) **(b)**
+- [extracted/2026-04-17_google-group_oliver-dunk-psa-messaging-api-changes-chrome144.md](../extracted/2026-04-17_google-group_oliver-dunk-psa-messaging-api-changes-chrome144.md) **(a)**
+- [extracted/2026-04-17_google-group_oliver-dunk-psa-resuming-mv3-transition.md](../extracted/2026-04-17_google-group_oliver-dunk-psa-resuming-mv3-transition.md) **(a)**
+- [extracted/2026-04-17_google-group_oliver-dunk-rollback-mv3-to-mv2.md](../extracted/2026-04-17_google-group_oliver-dunk-rollback-mv3-to-mv2.md) **(b)**
+- [extracted/2026-04-17_google-group_purple-nickel-privacy-policy-clarify.md](../extracted/2026-04-17_google-group_purple-nickel-privacy-policy-clarify.md) **(b)**
+- [extracted/2026-04-17_google-group_purple-nickel-rejection.md](../extracted/2026-04-17_google-group_purple-nickel-rejection.md) **(b)**
+- [extracted/2026-04-17_google-group_red-potassium-listing-inconsistency.md](../extracted/2026-04-17_google-group_red-potassium-listing-inconsistency.md) **(b)**
+- [extracted/2026-04-17_google-group_red-titanium-obfuscation-minify-confusion.md](../extracted/2026-04-17_google-group_red-titanium-obfuscation-minify-confusion.md) **(b)**
+- [extracted/2026-04-17_google-group_yellow-lithium-launcher-policy-takedown.md](../extracted/2026-04-17_google-group_yellow-lithium-launcher-policy-takedown.md) **(b)**
+- [extracted/2026-04-17_google-group_yellow-nickel-rejection-spam-metadata.md](../extracted/2026-04-17_google-group_yellow-nickel-rejection-spam-metadata.md) **(b)**
+- [extracted/2026-04-17_google-group_yellow-nickel-spam-language-pack.md](../extracted/2026-04-17_google-group_yellow-nickel-spam-language-pack.md) **(b)**
+- [extracted/2026-04-17_google-group_yellow-potassium-minimum-functionality.md](../extracted/2026-04-17_google-group_yellow-potassium-minimum-functionality.md) **(b)**
+- [extracted/2026-04-17_layerx_webinar-stopping-malicious-browser-extensions.md](../extracted/2026-04-17_layerx_webinar-stopping-malicious-browser-extensions.md) **(c)**
+- [extracted/2026-04-17_palant_categories-add-ons.md](../extracted/2026-04-17_palant_categories-add-ons.md) **(c)**
+- [extracted/2026-04-17_palant_malicious-code-pdf-toolbox-extension.md](../extracted/2026-04-17_palant_malicious-code-pdf-toolbox-extension.md) **(c)**
+- [extracted/2026-04-17_redcanary_chromeloader-pushy-malvertiser.md](../extracted/2026-04-17_redcanary_chromeloader-pushy-malvertiser.md) **(c)**
+- [extracted/2026-04-17_securitywithsam_dataspii-leak-via-browser-extensions.md](../extracted/2026-04-17_securitywithsam_dataspii-leak-via-browser-extensions.md) **(b)**
+- [extracted/2026-04-17_seraphic_webinar-unreasonable-effectiveness-malicious-extensions.md](../extracted/2026-04-17_seraphic_webinar-unreasonable-effectiveness-malicious-extensions.md) **(c)**
+- [extracted/2026-04-17_spinai_unpacking-browser-extension-threat-model.md](../extracted/2026-04-17_spinai_unpacking-browser-extension-threat-model.md) **(c)**
