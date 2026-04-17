@@ -1,18 +1,33 @@
 # Chrome Extension Factory
 
-*Package: `create-chrome-extension` — clone this repo to scaffold a new extension.*
+*Package: `create-chrome-extension` — scaffold a new extension with one command.*
 
 Ship Chrome extensions fast. [WXT](https://wxt.dev) + React 19 + Tailwind v4 + TypeScript.
 
-> **First time here?** After cloning and running `npm install`, invoke **`/cce-init`** in Claude Code. The skill walks you through profile selection, listing copy, screenshots, and a launch video — from fresh clone to ship-ready in one guided pass. See [ARCHITECTURE.md](ARCHITECTURE.md) for the design philosophy.
+> **First time here?** Run `npx create-chrome-extension my-thing` (or clone + `/cce-init`). The skill walks you through a pitch-driven interview and scaffolds tailored code — see [ARCHITECTURE.md](ARCHITECTURE.md) for the design philosophy.
 
 ## Quick Start
+
+```bash
+npx create-chrome-extension my-extension
+cd my-extension
+# Open in Claude Code, run /cce-init
+```
+
+Or install the skill directly into Claude Code and let it clone:
+
+```bash
+npx skills add <your-org>/cce-factory
+# Then in Claude Code: /cce-init
+```
+
+Or clone manually:
 
 ```bash
 git clone <this-repo> my-extension
 cd my-extension
 npm install
-npm run dev   # opens Chrome with extension loaded
+npm run dev
 ```
 
 ## Architecture
