@@ -52,7 +52,7 @@ The body of the file is the prompt Claude sees when the skill is invoked. Write 
 | `cws-content` | shipped (Session 2) | `/skills/cws-content/SKILL.md` | Interview user to fill listing copy, origins, and welcome-page config. Clears the 4 content errors in ship-mode validator. |
 | `cws-screens` | shipped (Session 4) | `/skills/cws-screens/SKILL.md` | Walk user through 5 CWS-compliant screenshots via the `screenshots/` subproject. |
 | `cws-ship` | shipped (Session 3) | `/skills/cws-ship/SKILL.md` | Orchestrate full submission flow: delegate to cws-content / cws-screens, version-sync, zip, submit, poll, rejection-recovery. |
-| `cws-init` | shipped (Session 5) | `/skills/cws-init/SKILL.md` | First-time onboarding: profile selection, initial cws-content pass, optional cws-screens, optional OAuth setup. |
+| `cce-init` | shipped (Session 5) | `/skills/cce-init/SKILL.md` | First-time onboarding: profile selection, initial cws-content pass, optional cws-screens, optional OAuth setup. |
 | `cws-video` | shipped (Session 6) | `/skills/cws-video/SKILL.md` | Wraps `heygen-com/hyperframes` for CWS launch-video generation. Default-on workflow. See External dependencies. |
 
 ## External dependencies

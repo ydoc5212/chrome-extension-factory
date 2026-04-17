@@ -1,6 +1,6 @@
 ---
-name: cws-init
-description: First-time onboarding for a freshly-cloned Chrome Extension Factory. Orients the user on the factory's philosophy, walks through extension-shape profile selection (deleting unused entrypoints), delegates to `cws-content` for listing copy, optionally runs `cws-screens` for screenshots, optionally walks through OAuth setup, confirms structural green, and drops a `.cws-init-done` marker. Idempotent — re-invoking on an already-initialized factory offers a sub-recipe menu instead of re-running the whole flow.
+name: cce-init
+description: First-time onboarding for a freshly-cloned Chrome Extension Factory. Orients the user on the factory's philosophy, walks through extension-shape profile selection (deleting unused entrypoints), delegates to `cws-content` for listing copy, optionally runs `cws-screens` for screenshots, optionally walks through OAuth setup, confirms structural green, and drops a `.cce-init-done` marker. Idempotent — re-invoking on an already-initialized factory offers a sub-recipe menu instead of re-running the whole flow.
 triggers:
   - "user just cloned the chrome extension factory"
   - "fresh factory clone"
@@ -10,7 +10,7 @@ triggers:
   - "what do I do first"
   - "help me get started with this extension template"
   - "strip down the factory for my use case"
-  - "/cws-init"
+  - "/cce-init"
 invokes:
   - "cws-content"                                      # skill delegation for listing copy (Phase D)
   - "cws-screens"                                      # skill delegation for screenshots (Phase E, optional)
@@ -18,15 +18,15 @@ invokes:
   - "npm run check:cws"                                # structural validator (Phase G)
   - "npx wxt prepare"                                  # regenerate WXT types after profile-strip (Phase C)
 writes:
-  - ".cws-init-done"                                   # marker file dropped at Phase H
+  - ".cce-init-done"                                   # marker file dropped at Phase H
   - ".gitignore"                                       # add the marker to gitignore (Phase H)
   - "entrypoints/"                                     # delete unused entrypoints during profile selection (Phase C)
   - "wxt.config.ts"                                    # only to remove orphaned permissions flagged in Phase C
 ---
 
-# cws-init skill
+# cce-init skill
 
-You are driving the `cws-init` skill. Your single responsibility is to orient a brand-new user of the Chrome Extension Factory: explain the philosophy briefly, strip the factory to their extension shape, delegate to other skills for content and screenshots, optionally walk OAuth setup, confirm `check:cws` stays green, and drop a marker file so subsequent runs know init is done.
+You are driving the `cce-init` skill. Your single responsibility is to orient a brand-new user of the Chrome Extension Factory: explain the philosophy briefly, strip the factory to their extension shape, delegate to other skills for content and screenshots, optionally walk OAuth setup, confirm `check:cws` stays green, and drop a marker file so subsequent runs know init is done.
 
 You do NOT write listing copy yourself (that's `cws-content`). You do NOT generate screenshots yourself (that's `cws-screens`). You do NOT submit or zip (that's `cws-ship`). You DO:
 
@@ -36,7 +36,7 @@ You do NOT write listing copy yourself (that's `cws-content`). You do NOT genera
 - Delegate to `cws-screens` for screenshot scaffolding (if `screenshots/` still exists).
 - Walk the OAuth setup stepwise, linking to `docs/08-keepalive-publish.md` rather than duplicating it.
 - Run `npm run check:cws` at the end to confirm the factory invariant holds.
-- Drop `.cws-init-done` and add it to `.gitignore`.
+- Drop `.cce-init-done` and add it to `.gitignore`.
 
 The factory invariant after a fresh-clone run: `npm run check:cws` stays green; `npm run check:cws:ship` drops from 4 content errors to 0 (modulo `ship-ready-screenshots` if the user skipped Phase E, which is expected and fine).
 
@@ -48,7 +48,7 @@ The factory invariant after a fresh-clone run: `npm run check:cws` stays green; 
 
 Run these three checks (all three must indicate "fresh" for the factory to count as fresh):
 
-1. **Marker file check.** Does `.cws-init-done` exist at the repo root? If yes → not fresh.
+1. **Marker file check.** Does `.cce-init-done` exist at the repo root? If yes → not fresh.
 2. **Manifest name check.** Read `wxt.config.ts`. Is `manifest.name` still `'My Extension'`? If no → not fresh.
 3. **Welcome config check.** Read `entrypoints/welcome/config.ts` (if it exists). Does it contain any of these factory placeholder strings?
    - `"A brief one-sentence description"`
@@ -60,7 +60,7 @@ Run these three checks (all three must indicate "fresh" for the factory to count
 
 **If not fresh**: do NOT re-run the full flow. Print:
 
-> Looks like you've already run `cws-init` on this factory (marker file present / name customized / welcome copy filled in). I won't re-delete entrypoints or overwrite your config.
+> Looks like you've already run `cce-init` on this factory (marker file present / name customized / welcome copy filled in). I won't re-delete entrypoints or overwrite your config.
 >
 > Want to re-run a specific step? Pick one:
 >
@@ -226,7 +226,7 @@ If yes: invoke `cws-screens` and wait for it to report back. Like Phase D, do NO
 
 If skip: note that `ship-ready-screenshots` will stay red until the user runs `cws-screens` later. That's fine; the factory allows shipping-adjacent states. Move on.
 
-**If `screenshots/` was deleted** (the user stripped it previously — cws-init doesn't delete it in Phase C, but it may have been removed in a prior session): skip this phase silently. Don't tell the user to re-add it; if they wanted screenshots they'd have kept the subproject.
+**If `screenshots/` was deleted** (the user stripped it previously — cce-init doesn't delete it in Phase C, but it may have been removed in a prior session): skip this phase silently. Don't tell the user to re-add it; if they wanted screenshots they'd have kept the subproject.
 
 ---
 
@@ -260,7 +260,7 @@ Ask:
 
 ### If "defer"
 
-> Fine — you can still ship manually: `npm run zip` produces a zip in `.output/` (once ship-mode is green), and you drag-and-drop it into the CWS developer dashboard. The `ship` skill will walk you through that path too. Come back and re-run `cws-init` option 4 when you're ready for automation.
+> Fine — you can still ship manually: `npm run zip` produces a zip in `.output/` (once ship-mode is green), and you drag-and-drop it into the CWS developer dashboard. The `ship` skill will walk you through that path too. Come back and re-run `cce-init` option 4 when you're ready for automation.
 
 Move on to Phase G.
 
@@ -353,17 +353,17 @@ Three things happen here: drop the marker, update `.gitignore`, print the summar
 
 ### Drop the marker
 
-Write a single-line file at the repo root: `.cws-init-done`
+Write a single-line file at the repo root: `.cce-init-done`
 
-Content is just the current date in ISO 8601 (e.g., `2026-04-16`). This file is purely a signal to future `cws-init` invocations that initialization is complete; it has no other consumer.
+Content is just the current date in ISO 8601 (e.g., `2026-04-16`). This file is purely a signal to future `cce-init` invocations that initialization is complete; it has no other consumer.
 
 ### Update `.gitignore`
 
-Read the current `.gitignore`. If it doesn't already contain `.cws-init-done`, add a section:
+Read the current `.gitignore`. If it doesn't already contain `.cce-init-done`, add a section:
 
 ```
-# cws-init marker (local-only; signals init has been run)
-.cws-init-done
+# cce-init marker (local-only; signals init has been run)
+.cce-init-done
 ```
 
 Add it above the existing `# Secrets` section or near the bottom — order doesn't matter, grouping does. Don't accidentally reformat the rest of the file.
@@ -393,7 +393,7 @@ If Phase F was run (OAuth configured), add:
 
 If Phase F was deferred:
 
-> When you want to flip `npm run ship` on, re-run `/cws-init` and pick option 4 (OAuth setup).
+> When you want to flip `npm run ship` on, re-run `/cce-init` and pick option 4 (OAuth setup).
 
 Stop. Do not re-run anything else.
 
@@ -405,9 +405,9 @@ This traces a complete fresh-clone run so you can see the shape of a good sessio
 
 ### Starting state
 
-User runs `/cws-init` on a freshly-cloned factory. Phase A checks:
+User runs `/cce-init` on a freshly-cloned factory. Phase A checks:
 
-- `.cws-init-done` — absent.
+- `.cce-init-done` — absent.
 - `wxt.config.ts` `manifest.name` — `'My Extension'`.
 - `entrypoints/welcome/config.ts` — contains `"A brief one-sentence description"` and `"your-org"`.
 
@@ -510,7 +510,7 @@ Skill asks:
 
 User: "defer."
 
-Skill: "OK — manual zip upload via the CWS dashboard is fine. `npm run zip` produces the zip; drag-and-drop into the developer console. Come back and re-run `/cws-init` option 4 when you want automation."
+Skill: "OK — manual zip upload via the CWS dashboard is fine. `npm run zip` produces the zip; drag-and-drop into the developer console. Come back and re-run `/cce-init` option 4 when you want automation."
 
 ### Phase G — confirm green
 
@@ -524,7 +524,7 @@ Green. Phase G passes.
 
 ### Phase H — finalize
 
-Skill writes `.cws-init-done`:
+Skill writes `.cce-init-done`:
 
 ```
 2026-04-16
@@ -533,8 +533,8 @@ Skill writes `.cws-init-done`:
 Skill edits `.gitignore` to add:
 
 ```
-# cws-init marker (local-only; signals init has been run)
-.cws-init-done
+# cce-init marker (local-only; signals init has been run)
+.cce-init-done
 ```
 
 Skill prints summary:
@@ -553,7 +553,7 @@ Skill prints summary:
 >
 > Next steps:
 > - To scaffold screenshots later: invoke `/cws-screens`.
-> - When you want auto-publish: re-run `/cws-init` and pick option 4 (OAuth setup).
+> - When you want auto-publish: re-run `/cce-init` and pick option 4 (OAuth setup).
 > - When ready to submit: invoke `/cws-ship`.
 
 ### Final filesystem state (diff from fresh clone)
@@ -569,12 +569,12 @@ Deleted:
 Modified:
 - `wxt.config.ts` — permissions trimmed, optional_host_permissions removed, minimum_chrome_version removed, name + description filled in.
 - `entrypoints/background.ts` — welcome tab-create block removed, alarms block removed.
-- `.gitignore` — added `.cws-init-done` entry.
+- `.gitignore` — added `.cce-init-done` entry.
 
 Created:
-- `.cws-init-done` — one-line ISO date.
+- `.cce-init-done` — one-line ISO date.
 
-This is the end state cws-init is responsible for. `cws-content` owns `wxt.config.ts`'s name/description and (if it still existed) `welcome/config.ts`; `cws-init` owns the profile-strip and the marker.
+This is the end state cce-init is responsible for. `cws-content` owns `wxt.config.ts`'s name/description and (if it still existed) `welcome/config.ts`; `cce-init` owns the profile-strip and the marker.
 
 ---
 
@@ -586,7 +586,7 @@ This is the end state cws-init is responsible for. `cws-content` owns `wxt.confi
 
 - **`cws-content` fails mid-run** (user refused to answer, network issue, etc.). That's `cws-content`'s problem to handle, not yours. Accept whatever state it reports back in and move to Phase E. The factory invariant tolerates a partial `check:cws:ship` state — `check:cws` is the one that must stay green, and that's structural, not content.
 
-- **User already ran init once, then deleted `.cws-init-done` by accident, then re-invokes.** Phase A's three signals will still detect "not fresh" because the manifest name won't be `'My Extension'` anymore. Good — the skill won't destructively re-run. If the user insists ("no really, it's a fresh start"), they should re-clone the repo rather than fight the detector.
+- **User already ran init once, then deleted `.cce-init-done` by accident, then re-invokes.** Phase A's three signals will still detect "not fresh" because the manifest name won't be `'My Extension'` anymore. Good — the skill won't destructively re-run. If the user insists ("no really, it's a fresh start"), they should re-clone the repo rather than fight the detector.
 
 - **`check:cws` is red in Phase G and the user can't figure out why.** Don't guess — read the validator's JSON output. Each finding has a `fix` field naming the exact file and change. Show the user the full finding verbatim and work through one at a time. The rule ids are stable contracts; trust them.
 
@@ -599,7 +599,7 @@ This is the end state cws-init is responsible for. `cws-content` owns `wxt.confi
 - Does not write listing copy, welcome config, or any content the user is responsible for. Delegates to `cws-content`.
 - Does not generate screenshots. Delegates to `cws-screens`.
 - Does not submit, zip, or publish. That's `cws-ship` (future skill).
-- Does not modify `scripts/`, validator rules, or any deterministic-substrate file. It only touches entrypoints/ (profile-strip), `wxt.config.ts` (orphan-permission cleanup), `.gitignore` (marker entry), and the `.cws-init-done` marker itself.
+- Does not modify `scripts/`, validator rules, or any deterministic-substrate file. It only touches entrypoints/ (profile-strip), `wxt.config.ts` (orphan-permission cleanup), `.gitignore` (marker entry), and the `.cce-init-done` marker itself.
 - Does not duplicate the OAuth setup walkthrough — `docs/08-keepalive-publish.md` is the source of truth; this skill references it and just runs the terminal side.
 - Does not fabricate defaults. If the user deflects a question, the skill delegates or skips, it does not fill in plausible-looking values.
 - Does not run on an already-initialized factory. Phase A's detector short-circuits to the sub-recipe menu.
