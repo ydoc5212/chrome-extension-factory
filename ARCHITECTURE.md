@@ -143,6 +143,19 @@ This is fine — the skills are still correctly scoped (one responsibility each,
 
 ---
 
+## Knowledge entry (post-2026-04 model)
+
+The factory no longer grows a standalone knowledge base. New Chrome-Web-Store knowledge enters via one of two paths:
+
+- **Automatable (pattern, presence, policy):** a new rule in `scripts/validate-cws.ts` with a `source:` URL inline and a line in `docs/03-cws-best-practices.md` citing it.
+- **Judgment-level (is this spammy, is this appealable, how to respond to a rejection):** a new recipe in the relevant skill's `SKILL.md`.
+
+Neither path creates standalone capture files. The frozen `sources/` tree holds citations backing pre-existing doc claims; new contributions reference their source URL inline (or a Wayback snapshot) rather than duplicating content into this repo.
+
+The Red Titanium obfuscation rule is the model: insight was "ship hardcoded arrays, not string concatenation" → became validator rule `red-titanium-dynamic-url-concat` (advisory) + a section in `docs/03-cws-best-practices.md`. No extraction file was needed to persist the knowledge.
+
+---
+
 ## How to extend
 
 ### Add a new validator rule
