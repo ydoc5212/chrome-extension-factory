@@ -551,6 +551,43 @@ function swListenerTopLevel(ctx: Context): Finding[] {
   return findings;
 }
 
+// Structural (warn): scans built JS for string-concatenated URL patterns that
+// CWS automated review has flagged as potential obfuscation (Red Titanium).
+// Evidence class: c (forum-reported). Source:
+//   sources/extracted/2026-04-17_google-group_red-titanium-obfuscation-minify-confusion.md
+//
+// Heuristic: a string literal beginning with "http://" or "https://" immediately
+// followed by `+` — the canonical pattern that triggered Red Titanium in the
+// reported case. Severity is warn, not error: the heuristic can fire on comments
+// or log messages, and Chrome team acknowledged this as a known false-positive
+// source. Fix is to replace with a hardcoded domain array.
+function redTitaniumDynamicUrlConcat(_ctx: Context): Finding[] {
+  if (!existsSync(OUTPUT_DIR)) return [];
+  const findings: Finding[] = [];
+  // Match both single- and double-quoted http(s):// literals followed by +
+  const re = /(?:"https?:\/\/"|'https?:\/\/')\s*\+/g;
+  for (const entry of readdirSync(OUTPUT_DIR)) {
+    if (!entry.endsWith('.js')) continue;
+    const full = join(OUTPUT_DIR, entry);
+    if (!statSync(full).isFile()) continue;
+    const content = readFileSync(full, 'utf8');
+    for (const match of content.matchAll(re)) {
+      const line = lineOf(content, match.index ?? 0);
+      findings.push({
+        rule: 'red-titanium-dynamic-url-concat',
+        severity: 'warn',
+        message: `Dynamic URL construction via string concatenation in built JS`,
+        why: 'CWS automated review (Red Titanium) has flagged string-concatenated URL construction as potential obfuscation, even when the intent is legitimate domain allowlisting. Chrome team acknowledged this as a source of false positives.',
+        source:
+          'https://groups.google.com/a/chromium.org/g/chromium-extensions/c/2cO2apjQe5s',
+        fix: 'Replace concatenated URL strings with a hardcoded domain array: `const ALLOWED_HOSTS = ["https://api.example.com"] as const;` — then reference `ALLOWED_HOSTS[0]` directly. See docs/09-cws-best-practices.md → "Red Titanium".',
+        locations: [`.output/chrome-mv3/${entry}:${line}`],
+      });
+    }
+  }
+  return findings;
+}
+
 // Ship-only, async: compares the local manifest to the live CWS listing.
 // Opt-in — returns [] cleanly when CWS secrets are not configured, so the
 // factory stays green-on-structural and red-with-exactly-4-errors on ship
@@ -773,6 +810,7 @@ const STRUCTURAL_RULES: RuleFn[] = [
   listingFieldsPresent,
   optionalHostSuggestion,
   swListenerTopLevel,
+  redTitaniumDynamicUrlConcat,
 ];
 
 const SHIP_ONLY_RULES: RuleFn[] = [
