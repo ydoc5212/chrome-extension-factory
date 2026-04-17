@@ -1,7 +1,7 @@
 /**
  * Chrome Web Store "taste validator".
  *
- * Two tiers (see docs/09-cws-best-practices.md → "Design philosophy"):
+ * Two tiers (see docs/03-cws-best-practices.md → "Design philosophy"):
  *
  *   STRUCTURAL — "is this extension well-formed?"
  *     Always passes on the factory template. Runs in CI. Catches regressions
@@ -42,7 +42,7 @@ const JSON_MODE = ARGS.includes('--json');
 const POSITIONAL = ARGS.filter((a) => !a.startsWith('--'));
 const OUTPUT_DIR = POSITIONAL[0] || join(ROOT, '.output', 'chrome-mv3');
 const MANIFEST_PATH = join(OUTPUT_DIR, 'manifest.json');
-const DOC_URL = 'docs/09-cws-best-practices.md';
+const DOC_URL = 'docs/03-cws-best-practices.md';
 
 const BROAD_PATTERNS = new Set([
   '<all_urls>',
@@ -506,7 +506,7 @@ function welcomeConfigReadyForSubmission(ctx: Context): Finding[] {
       severity: 'error',
       message: `entrypoints/welcome/config.ts still contains factory placeholder(s): ${placeholders.map((p) => `"${p}"`).join(', ')}`,
       why: 'The welcome page is the first thing your users see. Shipping with "your-org" / template copy signals an abandoned extension and erodes trust.',
-      source: 'docs/09-cws-best-practices.md',
+      source: 'docs/03-cws-best-practices.md',
       fix: 'Edit `entrypoints/welcome/config.ts`: set `valueProp`, `activationSurfaces`, `steps`, and real `links` for repo/issues/privacy. Or delete `entrypoints/welcome/` entirely if you don\'t want a welcome flow.',
     },
   ];
@@ -580,7 +580,7 @@ function redTitaniumDynamicUrlConcat(_ctx: Context): Finding[] {
         why: 'CWS automated review (Red Titanium) has flagged string-concatenated URL construction as potential obfuscation, even when the intent is legitimate domain allowlisting. Chrome team acknowledged this as a source of false positives.',
         source:
           'https://groups.google.com/a/chromium.org/g/chromium-extensions/c/2cO2apjQe5s',
-        fix: 'Replace concatenated URL strings with a hardcoded domain array: `const ALLOWED_HOSTS = ["https://api.example.com"] as const;` — then reference `ALLOWED_HOSTS[0]` directly. See docs/09-cws-best-practices.md → "Red Titanium".',
+        fix: 'Replace concatenated URL strings with a hardcoded domain array: `const ALLOWED_HOSTS = ["https://api.example.com"] as const;` — then reference `ALLOWED_HOSTS[0]` directly. See docs/03-cws-best-practices.md → "Red Titanium".',
         locations: [`.output/chrome-mv3/${entry}:${line}`],
       });
     }

@@ -18,7 +18,7 @@
  * To strip the welcome flow entirely (smart-defaults extensions where
  * onboarding is friction), delete `entrypoints/welcome/` and the
  * `tabs.create` block in `entrypoints/background.ts`.
- * See docs/10-onboarding.md.
+ * See docs/05-useful-patterns.md → "Welcome / Onboarding Page Pattern".
  */
 
 import type { PermissionsRequest } from '@/utils/permissions';

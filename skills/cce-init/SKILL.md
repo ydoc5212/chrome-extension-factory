@@ -37,7 +37,7 @@ You do NOT write listing copy yourself (that's `cws-content`). You do NOT genera
 - Walk profile selection (4 profiles) and delete the entrypoints that don't belong to the user's chosen profile.
 - Delegate to `cws-content` for initial listing/welcome copy.
 - Delegate to `cws-screens` for screenshot scaffolding (if `screenshots/` still exists).
-- Walk the OAuth setup stepwise, linking to `docs/08-keepalive-publish.md` rather than duplicating it.
+- Walk the OAuth setup stepwise, linking to `docs/06-keepalive-publish.md` rather than duplicating it.
 - Run `npm run check:cws` at the end to confirm the factory invariant holds.
 - Drop `.cce-init-done` and add it to `.gitignore`.
 
@@ -386,11 +386,11 @@ Move on to Phase G.
 
 ### If "yes"
 
-Do NOT paste the entire contents of `docs/08-keepalive-publish.md`. That doc is the source of truth; duplicating it here rots. Instead, walk the user through the **stepwise terminal prompts** and point at the doc for the detailed "where do I click?" parts.
+Do NOT paste the entire contents of `docs/06-keepalive-publish.md`. That doc is the source of truth; duplicating it here rots. Instead, walk the user through the **stepwise terminal prompts** and point at the doc for the detailed "where do I click?" parts.
 
 Say:
 
-> Full walkthrough lives at `docs/08-keepalive-publish.md` — open it in another tab. I'll run the terminal side; you'll run the browser side.
+> Full walkthrough lives at `docs/06-keepalive-publish.md` — open it in another tab. I'll run the terminal side; you'll run the browser side.
 >
 > You'll end up with four secrets. Here's what each is and where it comes from:
 >
@@ -439,7 +439,7 @@ Once the user confirms `echo $CWS_EXTENSION_ID | grep .` prints something:
 
 > Secrets confirmed. `npm run ship` will now use them to auto-publish. The scripts in `scripts/cws-api.ts`, `scripts/version-sync.ts`, and `scripts/publish-cws.ts` handle the API calls; you never touch OAuth directly.
 
-If the user runs into any "I clicked the wrong button" issues, point them back at `docs/08-keepalive-publish.md` — do not attempt to re-explain the Google Cloud Console dance yourself.
+If the user runs into any "I clicked the wrong button" issues, point them back at `docs/06-keepalive-publish.md` — do not attempt to re-explain the Google Cloud Console dance yourself.
 
 ---
 
@@ -720,6 +720,6 @@ This is the end state cce-init is responsible for. `cws-content` owns `wxt.confi
 - Does not generate screenshots. Delegates to `cws-screens`.
 - Does not submit, zip, or publish. That's `cws-ship` (future skill).
 - Does not modify `scripts/`, validator rules, or any deterministic-substrate file. It only touches entrypoints/ (profile-strip), `wxt.config.ts` (orphan-permission cleanup), `.gitignore` (marker entry), and the `.cce-init-done` marker itself.
-- Does not duplicate the OAuth setup walkthrough — `docs/08-keepalive-publish.md` is the source of truth; this skill references it and just runs the terminal side.
+- Does not duplicate the OAuth setup walkthrough — `docs/06-keepalive-publish.md` is the source of truth; this skill references it and just runs the terminal side.
 - Does not fabricate defaults. If the user deflects a question, the skill delegates or skips, it does not fill in plausible-looking values.
 - Does not run on an already-initialized factory. Phase A's detector short-circuits to the sub-recipe menu.

@@ -4,7 +4,7 @@ export default defineBackground(() => {
   // --- Installation ---
   // Open the welcome page on first install so the user can grant host access
   // from a button click (chrome.permissions.request() requires a user gesture).
-  // See docs/09-cws-best-practices.md and docs/10-onboarding.md.
+  // See docs/03-cws-best-practices.md and docs/05-useful-patterns.md.
   browser.runtime.onInstalled.addListener((details) => {
     console.log(`Extension installed: ${details.reason}`);
     if (details.reason !== 'install') return;

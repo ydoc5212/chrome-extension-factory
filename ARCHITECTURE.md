@@ -8,7 +8,7 @@ This document is the source of truth. `CLAUDE.md` is a Claude-facing orientation
 
 ## Core principle — lean on scripts, not on model recall
 
-Rules that matter are encoded as scripts that pass or fail, not as prose a reader is expected to remember. The validator (`scripts/validate-cws.ts`) is the source of truth for *what's true*; `docs/09-cws-best-practices.md` is context for *why*. When in doubt, run the script.
+Rules that matter are encoded as scripts that pass or fail, not as prose a reader is expected to remember. The validator (`scripts/validate-cws.ts`) is the source of truth for *what's true*; `docs/03-cws-best-practices.md` is context for *why*. When in doubt, run the script.
 
 This principle has two corollaries:
 
@@ -151,7 +151,7 @@ This is fine — the skills are still correctly scoped (one responsibility each,
 2. Pick a stable, kebab-case rule id (`host-permissions-breadth`, `ship-ready-welcome-config`). Rule ids become part of the skill API.
 3. Each finding must have: `rule`, `severity` (`error` | `warn`), `message`, `why`, `source` (URL preferred), `fix` (actionable; should reference specific files or commands).
 4. Add the function to either `STRUCTURAL_RULES` (always runs, must pass on factory) or `SHIP_ONLY_RULES` (runs in ship mode, may fail on factory by design).
-5. Document the rule in `docs/09-cws-best-practices.md` under the relevant category with evidence label (a/b/c/d).
+5. Document the rule in `docs/03-cws-best-practices.md` under the relevant category with evidence label (a/b/c/d).
 
 ### Add a new skill
 

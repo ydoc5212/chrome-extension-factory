@@ -12,8 +12,8 @@ topics:
   - runtime-permissions
   - optional-host-permissions
 feeds_docs:
-  - docs/09-cws-best-practices.md
-  - docs/10-onboarding.md
+  - docs/03-cws-best-practices.md
+  - docs/05-useful-patterns.md
 ---
 
 # Official — `chrome.permissions` runtime-request API + the non-optional permissions list
@@ -47,8 +47,8 @@ Two specifics worth codifying in playbooks:
 
 ## Implications for the factory
 
-- **For `docs/09-cws-best-practices.md`:** add an explicit bullet under the Permissions section for the non-optional list: "These permissions cannot be made optional — they're install-time or nothing: `debugger`, `declarativeNetRequest`, `devtools`, `geolocation`, `mdns`, `proxy`, `tts`, `ttsEngine`, `wallpaper`." This preempts the "I thought I could lazy-request it" failure mode.
-- **For `docs/10-onboarding.md`:** the welcome page's permission-request flow is already documented. Add a note about Chrome 133+ `addHostAccessRequest()` as a progressive-enhancement path when the user's Chrome supports it — detect via feature check, fall back to classic `request()`.
+- **For `docs/03-cws-best-practices.md`:** add an explicit bullet under the Permissions section for the non-optional list: "These permissions cannot be made optional — they're install-time or nothing: `debugger`, `declarativeNetRequest`, `devtools`, `geolocation`, `mdns`, `proxy`, `tts`, `ttsEngine`, `wallpaper`." This preempts the "I thought I could lazy-request it" failure mode.
+- **For `docs/05-useful-patterns.md`:** the welcome page's permission-request flow is already documented. Add a note about Chrome 133+ `addHostAccessRequest()` as a progressive-enhancement path when the user's Chrome supports it — detect via feature check, fall back to classic `request()`.
 - **For the validator (`scripts/validate-cws.ts`):** add a rule `optional-permissions-non-optional-listed` that flags any manifest where a permission from the non-optional list appears in `optional_permissions` — the manifest will fail silently at install, user never gets prompted, and debugging takes forever.
 - **For the template itself:** `entrypoints/welcome/App.tsx` requests `optional_host_permissions` from a user gesture (already the canonical pattern per CLAUDE.md). Document in a comment that the `"https://*/*"` wildcard in `optional_host_permissions` is intentional — reviewers sometimes flag it during submission, and the justification is this official API doc.
 

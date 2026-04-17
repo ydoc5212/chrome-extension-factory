@@ -12,7 +12,7 @@ topics:
   - prohibited-products
   - policy-enforcement
 feeds_docs:
-  - docs/09-cws-best-practices.md
+  - docs/03-cws-best-practices.md
 ---
 
 # Coditude — Blue Series (non-Argon) rejections are policy verdicts on the feature itself, not code problems
@@ -53,7 +53,7 @@ Coditude's stance on repositioning is the nuanced part: the policy can't be circ
 
 ## Implications for the factory
 
-- **For `docs/09-cws-best-practices.md` → "Spam & deceptive behavior" / prohibited-products coverage:** add a Blue Series subsection with Coditude's self-check question and the enumerated prohibited-functionality list. Call out explicitly that these rejections are **not code-fixable** — the factory's validator cannot detect intent, so this one is a pre-development conversation, not a pre-submission lint.
+- **For `docs/03-cws-best-practices.md` → "Spam & deceptive behavior" / prohibited-products coverage:** add a Blue Series subsection with Coditude's self-check question and the enumerated prohibited-functionality list. Call out explicitly that these rejections are **not code-fixable** — the factory's validator cannot detect intent, so this one is a pre-development conversation, not a pre-submission lint.
 - **For `scripts/validate-cws.ts`:** no mechanical rule maps here. Consider a documentation-only "pre-build" checklist item that appears in README/init output: "Before building, confirm your extension does not bypass paywalls, DRM, or third-party monetization." Intent is out of scope for the validator.
 - **For the template itself:** add a "prohibited-products smoke test" note to `docs/01-extension-type-profiles.md` so users pick a project profile after vetting policy alignment.
 

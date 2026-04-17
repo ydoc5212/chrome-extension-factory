@@ -12,7 +12,7 @@ export default defineConfig({
     // being declared up front. This keeps the install prompt empty and
     // avoids the "in-depth review" banner. Replace with the origins your
     // extension actually needs, or delete if you don't need host access.
-    // See docs/09-cws-best-practices.md.
+    // See docs/03-cws-best-practices.md.
     optional_host_permissions: ['https://example.com/*'],
     minimum_chrome_version: '114',
   },

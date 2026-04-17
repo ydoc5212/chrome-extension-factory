@@ -2,7 +2,7 @@
 
 Pick your extension type below and follow the strip-down checklist. Each takes under 2 minutes.
 
-> **About the welcome page.** Every profile below assumes you'll either keep `entrypoints/welcome/` (configure it via `entrypoints/welcome/config.ts`) or delete it. Delete only if your extension works with smart defaults and no host permissions — see `docs/10-onboarding.md` for the decision rule.
+> **About the welcome page.** Every profile below assumes you'll either keep `entrypoints/welcome/` (configure it via `entrypoints/welcome/config.ts`) or delete it. Delete only if your extension works with smart defaults and no host permissions — see `docs/05-useful-patterns.md` → "Welcome / Onboarding Page Pattern" for the decision rule.
 
 ---
 
@@ -170,6 +170,6 @@ manifest: {
 **Checklist:**
 - [ ] Edit `matches` in `content.ts` to target your site
 - [ ] Verify all permissions in `wxt.config.ts` are actually used
-- [ ] Fill in `entrypoints/welcome/config.ts` (value prop, steps, links) — see `docs/10-onboarding.md`
+- [ ] Fill in `entrypoints/welcome/config.ts` (value prop, steps, links) — see `docs/05-useful-patterns.md` → "Welcome / Onboarding Page Pattern"
 - [ ] `npm run dev` -- verify all entry points load
 - [ ] Remove any entry points you end up not using before submission

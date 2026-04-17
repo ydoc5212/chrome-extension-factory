@@ -12,8 +12,8 @@ topics:
   - isolated-world
   - intelligence-gathering
 feeds_docs:
-  - docs/09-cws-best-practices.md
-  - docs/07-useful-patterns.md
+  - docs/03-cws-best-practices.md
+  - docs/05-useful-patterns.md
 ---
 
 # Bashvlas — When to use `world: "MAIN"` content scripts: page-global access at the cost of chrome.* APIs
@@ -24,7 +24,7 @@ Chrome extensions default to `world: "ISOLATED"` for content scripts — safer, 
 
 ## Signal
 
-The factory's existing `docs/09-cws-best-practices.md` flags a validator rule `content-script-main-world` that warns against MAIN. This post is the counterpoint — **MAIN exists for a real reason**, and some extensions legitimately need it (fetch interception for request-observability extensions, reading page-state from SPAs that don't expose data via DOM, instrumenting specific web apps). The validator rule should be a **warning** with a clear justification path, not a hard reject.
+The factory's existing `docs/03-cws-best-practices.md` flags a validator rule `content-script-main-world` that warns against MAIN. This post is the counterpoint — **MAIN exists for a real reason**, and some extensions legitimately need it (fetch interception for request-observability extensions, reading page-state from SPAs that don't expose data via DOM, instrumenting specific web apps). The validator rule should be a **warning** with a clear justification path, not a hard reject.
 
 Bashvlas's metaphor is useful for docs voice: a MAIN script is James Bond — "you give him a task and send him to execute, cutting ties to it completely. We can still communicate with it, but only through simple `window.postMessage` signals. It has no sense of personal boundaries and can access a website's private parts and see their global variables. It can get inside of a website's wiring and even override `window.fetch` to see how it is communicating with the backend."
 
@@ -45,10 +45,10 @@ This is the standard pattern; Bashvlas's post affirms it in a single clear sente
 
 ## Implications for the factory
 
-- **For `docs/09-cws-best-practices.md`:** soften the `content-script-main-world` rule from "fail" to "warn + justify." Cite this extraction as the legitimate-use-case reference. Add a sentence: "If your extension needs to observe page globals or intercept `fetch`/XHR, MAIN is required; reviewers will not reject purely on MAIN, but they will scrutinize the justification text."
+- **For `docs/03-cws-best-practices.md`:** soften the `content-script-main-world` rule from "fail" to "warn + justify." Cite this extraction as the legitimate-use-case reference. Add a sentence: "If your extension needs to observe page globals or intercept `fetch`/XHR, MAIN is required; reviewers will not reject purely on MAIN, but they will scrutinize the justification text."
 - **For the validator (`scripts/validate-cws.ts`):** rename/adjust rule `content-script-main-world` — still fire, but emit severity `warn` in standard mode and `info` when a sibling ISOLATED content script is also registered (i.e., user has the standard two-script pattern). Reference this extraction in the message: "MAIN world is valid for fetch interception and page-global access; see sources/extracted/2026-04-17_bashvlas_main-content-script-james-bond.md."
-- **For the template itself:** `entrypoints/content.ts` is ISOLATED by default (correct). Add a commented-out `entrypoints/content-main.ts` stub showing the MAIN-world registration pattern + the `window.postMessage` bridge back to ISOLATED. Document when to uncomment it in `docs/07-useful-patterns.md`.
-- **For `docs/07-useful-patterns.md`:** add a "Fetch interception from an extension" pattern. Show the two-script setup (MAIN for fetch override, ISOLATED for chrome.* + message relay to background). Link this extraction for the canonical rationale.
+- **For the template itself:** `entrypoints/content.ts` is ISOLATED by default (correct). Add a commented-out `entrypoints/content-main.ts` stub showing the MAIN-world registration pattern + the `window.postMessage` bridge back to ISOLATED. Document when to uncomment it in `docs/05-useful-patterns.md`.
+- **For `docs/05-useful-patterns.md`:** add a "Fetch interception from an extension" pattern. Show the two-script setup (MAIN for fetch override, ISOLATED for chrome.* + message relay to background). Link this extraction for the canonical rationale.
 
 ## Provenance
 

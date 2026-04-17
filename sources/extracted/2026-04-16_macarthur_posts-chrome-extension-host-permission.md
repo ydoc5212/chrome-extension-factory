@@ -13,7 +13,7 @@ topics:
   - content-scripts
   - scripting-api
 feeds_docs:
-  - docs/09-cws-best-practices.md
+  - docs/03-cws-best-practices.md
 ---
 
 # MacArthur — Remove `content_scripts`, use `activeTab` + `scripting.executeScript` to dodge the in-depth-review banner
@@ -40,7 +40,7 @@ Ties directly to the Simeon Vincent quote extracted from `sources/forums/2026-04
 
 ## Implications for the factory
 
-- **For `docs/09-cws-best-practices.md`:** the Permissions section already cites this post; elevate it to call out the literal banner string as a **detection signal** — if you see that banner on upload, trace it to a broad `content_scripts.matches` first, broad `host_permissions` second. Add a separate note that the fix re-runs the content script per invocation, so idempotent listener registration or `chrome.storage.session` guarding is a necessary companion pattern.
+- **For `docs/03-cws-best-practices.md`:** the Permissions section already cites this post; elevate it to call out the literal banner string as a **detection signal** — if you see that banner on upload, trace it to a broad `content_scripts.matches` first, broad `host_permissions` second. Add a separate note that the fix re-runs the content script per invocation, so idempotent listener registration or `chrome.storage.session` guarding is a necessary companion pattern.
 - **For `scripts/validate-cws.ts`:** the `content-scripts-matches-breadth` rule (already listed in `docs/09`) should include a diagnostic hint like *"consider removing `content_scripts` entirely and injecting via `chrome.scripting.executeScript` + `activeTab` — see sources/extracted/2026-04-16_macarthur_..."* so when the rule fires, the failure message points at the canonical remedy.
 - **For the template itself:** the factory's `entrypoints/background.ts` and `entrypoints/content.ts` already default to a declarative `content_scripts` manifest via WXT. `docs/01-extension-type-profiles.md` should add an "on-demand injection" variant profile — `content_scripts` deleted, `activeTab` + `scripting` added, a user-gesture trigger in the background worker — and document the idempotency companion pattern.
 

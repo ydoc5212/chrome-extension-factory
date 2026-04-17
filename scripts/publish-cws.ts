@@ -92,7 +92,7 @@ type Outcome =
 async function run(transitions: Transition[]): Promise<Outcome> {
   const secrets = loadSecrets();
   if (!secrets) {
-    const reason = `no CWS secrets configured — set ${SECRET_ENV_NAMES.join(', ')} to enable automated publish. See docs/08-keepalive-publish.md for setup.`;
+    const reason = `no CWS secrets configured — set ${SECRET_ENV_NAMES.join(', ')} to enable automated publish. See docs/06-keepalive-publish.md for setup.`;
     log(transitions, 'skipped', reason);
     return { kind: 'skipped', reason };
   }

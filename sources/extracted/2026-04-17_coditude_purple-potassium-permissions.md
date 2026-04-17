@@ -12,7 +12,7 @@ topics:
   - permissions
   - least-privilege
 feeds_docs:
-  - docs/09-cws-best-practices.md
+  - docs/03-cws-best-practices.md
 ---
 
 # Coditude — Purple Potassium means your manifest asks for more than your code uses; audit, narrow, and prefer optional permissions
@@ -51,7 +51,7 @@ The remedy toolbox is narrow and specific: swap `<all_urls>` for specific hosts,
 
 ## Implications for the factory
 
-- **For `docs/09-cws-best-practices.md` → "Permissions & host access" section:** add Purple Potassium as the rejection label for this family. Fold in the two underappreciated rules (commented-out code still counts; user-data permissions force a privacy policy). The MacArthur extraction already covers `<all_urls>` → `activeTab + scripting` — cross-link from the Purple Potassium discussion to that specific remedy.
+- **For `docs/03-cws-best-practices.md` → "Permissions & host access" section:** add Purple Potassium as the rejection label for this family. Fold in the two underappreciated rules (commented-out code still counts; user-data permissions force a privacy policy). The MacArthur extraction already covers `<all_urls>` → `activeTab + scripting` — cross-link from the Purple Potassium discussion to that specific remedy.
 - **For `scripts/validate-cws.ts`:** this is the single best-aligned rejection family for validator automation. Rules to add/extend:
   - Flag `<all_urls>`, `*://*/*`, and overly broad match patterns — emit "likely Purple Potassium."
   - Parse manifest permissions, scan bundled JS for the corresponding `chrome.<api>` call, and flag any declared permission with zero call-sites (strongest signal of "unused permission").

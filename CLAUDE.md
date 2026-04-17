@@ -61,7 +61,7 @@ A factory for building Chrome extensions at high velocity. Ships every common ex
 - `utils/messaging.ts` — typed message protocol (add message types to ProtocolMap)
 - `assets/styles/shared.css` — CSS custom properties for content script theming
 - `scripts/inject-secrets.ts` — build-time secret replacement
-- `scripts/validate-cws.ts` — Chrome Web Store best-practice validator (rules documented in `docs/09-cws-best-practices.md`)
+- `scripts/validate-cws.ts` — Chrome Web Store best-practice validator (rules documented in `docs/03-cws-best-practices.md`)
 - `entrypoints/welcome/` — post-install welcome page that requests `optional_host_permissions` at runtime (the pattern that avoids the CWS "in-depth review" banner)
 
 ## Extension type profiles

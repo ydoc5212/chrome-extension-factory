@@ -12,7 +12,7 @@ topics:
   - review-times
   - permissions
 feeds_docs:
-  - docs/09-cws-best-practices.md
+  - docs/03-cws-best-practices.md
 ---
 
 # Deco + Oliver Dunk — The official CWS line on review-time factors, and deferred publishing as the launch tool
@@ -42,8 +42,8 @@ Deco's "there isn't anything you can do" is technically true (everyone queues eq
 
 ## Implications for the factory
 
-- **For `docs/09-cws-best-practices.md`:** the "Updates & re-review triggers" section already mentions deferred publishing. Elevate it to a standalone bullet: "For any extension with a launch date, use deferred publishing — submit 7–14 days before go-live, schedule the publish, absorb review variance without launch-day pain." Cross-reference this extraction.
-- **For `docs/03-chrome-web-store-submission.md`:** add a "Deferred publishing" subsection. The link `developer.chrome.com/docs/webstore/publish/#deferred-publishing` is the spec; the justification ("review variance is unpredictable; queue time ≠ wall time") is the pitch to someone planning a marketing push.
+- **For `docs/03-cws-best-practices.md`:** the "Updates & re-review triggers" section already mentions deferred publishing. Elevate it to a standalone bullet: "For any extension with a launch date, use deferred publishing — submit 7–14 days before go-live, schedule the publish, absorb review variance without launch-day pain." Cross-reference this extraction.
+- **For `docs/03-cws-best-practices.md`:** add a "Deferred publishing" subsection. The link `developer.chrome.com/docs/webstore/publish/#deferred-publishing` is the spec; the justification ("review variance is unpredictable; queue time ≠ wall time") is the pitch to someone planning a marketing push.
 - **For the validator (`scripts/validate-cws.ts`):** no new rules — this extraction's insight is procedural, not static-analyzable. Possibly a `ship` mode warning: "first submission on a new publisher account expects manual review; plan for up to 3 weeks."
 - **For the template itself:** not applicable. This is a shipping-playbook insight, not a code pattern.
 

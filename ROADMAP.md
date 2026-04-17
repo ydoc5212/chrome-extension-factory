@@ -75,9 +75,9 @@ Sessions 1 and 2 are the two "ground floors." After those, everything else slots
    - Automation surface table: add `npm run ship` row.
    - "Planned extensions" table: mark Session 1 items done.
 
-7. `README.md` + `docs/03-chrome-web-store-submission.md`:
+7. `README.md` + `docs/03-cws-best-practices.md`:
    - Add `npm run ship` to command tables.
-   - Add "Automated publishing" section with the 4-secret setup (cross-link to `docs/08-keepalive-publish.md` which already documents the secret flow).
+   - Add "Automated publishing" section with the 4-secret setup (cross-link to `docs/06-keepalive-publish.md` which already documents the secret flow).
 
 **Acceptance — all of these must be true:**
 
@@ -172,7 +172,7 @@ Sessions 1 and 2 are the two "ground floors." After those, everything else slots
    5. Summarize the submission: name, description, version, permissions. Ask user to confirm.
    6. Run `npm run ship`.
    7. If publish-cws polled into a terminal state: report `live` / `rejected` / `in-review` / `timeout`.
-   8. If `rejected`: surface the reason, map to known rejection codes (from `docs/09-cws-best-practices.md`), offer a fix recipe.
+   8. If `rejected`: surface the reason, map to known rejection codes (from `docs/03-cws-best-practices.md`), offer a fix recipe.
 
 3. Rejection recipes for common cases:
    - Blue Argon (remote code) → point at `remote-code-patterns` validator rule.
@@ -232,7 +232,7 @@ Sessions 1 and 2 are the two "ground floors." After those, everything else slots
    - Previews outputs (ideally via the Claude Code image-viewing capability).
    - Iterates on overlay copy until user approves.
 
-8. Cross-links: `README.md`, `docs/05-launch-materials.md` (currently points to iOS skill — rewrite to point to CWS skill for Chrome submission).
+8. Cross-links: `README.md`, `docs/05-useful-patterns.md` (currently points to iOS skill — rewrite to point to CWS skill for Chrome submission).
 
 **Acceptance:**
 
@@ -240,7 +240,7 @@ Sessions 1 and 2 are the two "ground floors." After those, everything else slots
 - [ ] Factory-default config produces visibly placeholder screenshots (obvious they need customization).
 - [ ] Skill walks through 5 screenshots, produces customized PNGs.
 - [ ] New validator rule fires red in ship mode on factory; green after skill run.
-- [ ] `docs/05-launch-materials.md` updated to reflect the split (iOS skill vs. Chrome skill).
+- [ ] `docs/05-useful-patterns.md` updated to reflect the split (iOS skill vs. Chrome skill).
 
 **Out of scope:** Submission of screenshots to CWS dashboard (there's no API for screenshot upload; the user drags them into the dashboard). Video promo asset.
 
@@ -327,7 +327,7 @@ Sessions 1 and 2 are the two "ground floors." After those, everything else slots
 
 8. `npm run video` script in `package.json` — one-shot invocation (if hyperframes has a CLI entrypoint usable from an npm script; otherwise this may be skill-only).
 
-9. `docs/05-launch-materials.md` — add a video section parallel to the screenshots section; distinguish video spec for CWS (YouTube embed, ≤30 sec preview) vs. social (60–90 sec MP4, etc.).
+9. `docs/05-useful-patterns.md` — add a video section parallel to the screenshots section; distinguish video spec for CWS (YouTube embed, ≤30 sec preview) vs. social (60–90 sec MP4, etc.).
 
 10. `skills/README.md` — update the External dependencies table: `heygen-com/hyperframes` is **Required** (not optional) for the default ship path.
 
@@ -432,7 +432,7 @@ Session 6 (video) after 3 and 5 ship — retrofits delegation into both of those
 
 3. Update cws-ship's rejection-recovery recipes — add "Update rejected for change of functionality" entry, pointing back to Phase A.4's output.
 
-4. `/docs/03-chrome-web-store-submission.md` — add a short "Updating an existing extension" section mirroring the Phase A.4 logic.
+4. `/docs/03-cws-best-practices.md` — add a short "Updating an existing extension" section mirroring the Phase A.4 logic.
 
 5. `ARCHITECTURE.md` — mark Session 7 done in Planned extensions. Resolve the "Updates workflow vs. first submission" limitation in Known Limitations.
 

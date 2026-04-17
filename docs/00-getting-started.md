@@ -91,7 +91,7 @@ For automated keepalive (version bump + publish via GitHub Actions), see [docs/0
 Screenshots and a launch video are the two biggest conversion assets on the Chrome Web Store tile.
 
 - **CWS screenshots:** 1280×800 PNG, up to 5. Use the `/cws-screens` skill — it walks you through 5 shots and generates PNGs via `npm run screenshots`. Outputs land in `.output/screenshots/`.
-- **CWS launch video:** 30-second YouTube embed. Use the `/cws-video` skill wrapping `heygen-com/hyperframes`. Config lives in `video/config.ts`; escape hatch is `rm -rf video/`.
+- **CWS launch video:** 30-second YouTube embed. Use the `/cws-video` skill wrapping `heygen-com/hyperframes`. Config lives in `video/config.ts`; escape hatch is `rm -rf video/`. The skill will suggest [Cap](https://cap.so) (free, open-source) when it asks you about screen recording footage for each beat.
 - **iOS App Store screenshots** (if you ship a companion app): use the `/app-store-screenshots` skill — different dimensions (portrait, phone mockups) from CWS.
 
 These are parallel, not interchangeable. The first CWS screenshot is the tile thumbnail in search results — make it the most compelling one.

@@ -46,7 +46,7 @@ marketing/
 
 ### Fallback
 
-If you don't use Claude Code, see `docs/05-launch-materials.md` for the manual screenshot process.
+If you don't use Claude Code, take screenshots manually at 1280×800 using CleanShot or your OS screenshotter, and save them to `.output/screenshots/`.
 
 ---
 

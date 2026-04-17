@@ -13,7 +13,7 @@ topics:
   - screenshots
   - icons
 feeds_docs:
-  - docs/09-cws-best-practices.md
+  - docs/03-cws-best-practices.md
 ---
 
 # Coditude — Yellow Zinc rejects the listing, not the code: fix title, description, screenshots, icons
@@ -52,7 +52,7 @@ Recommended listing structure (Coditude's template, worth lifting):
 
 ## Implications for the factory
 
-- **For `docs/09-cws-best-practices.md` → "Listing assets & metadata" section:** add Yellow Zinc as the rejection label for listing-quality failures. Fold in the concrete format rules (PNG/JPG only, no WebP/SVG; 128x128 transparent-bg icon required) and the reviewer-tests-the-description rule as a spam-adjacent heuristic.
+- **For `docs/03-cws-best-practices.md` → "Listing assets & metadata" section:** add Yellow Zinc as the rejection label for listing-quality failures. Fold in the concrete format rules (PNG/JPG only, no WebP/SVG; 128x128 transparent-bg icon required) and the reviewer-tests-the-description rule as a spam-adjacent heuristic.
 - **For `scripts/validate-cws.ts`:** add rules that inspect the submission assets directory:
   - Reject `.webp` and `.svg` files used as listing screenshots.
   - Require a 128x128 icon with alpha channel (transparent background).

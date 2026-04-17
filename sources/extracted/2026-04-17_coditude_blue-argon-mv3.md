@@ -12,7 +12,7 @@ topics:
   - mv3
   - remote-code
 feeds_docs:
-  - docs/09-cws-best-practices.md
+  - docs/03-cws-best-practices.md
 ---
 
 # Coditude — Blue Argon means remote-hosted code; bundle everything locally and kill `eval`
@@ -47,7 +47,7 @@ The subtle point that doesn't appear in Google's official docs: **precompiled te
 
 ## Implications for the factory
 
-- **For `docs/09-cws-best-practices.md` → "Manifest V3 code requirements" section:** add the Blue Argon rejection label and Coditude's enumerated list of common causes. The `grep -r "http" .` self-check is a useful pre-submission heuristic worth calling out.
+- **For `docs/03-cws-best-practices.md` → "Manifest V3 code requirements" section:** add the Blue Argon rejection label and Coditude's enumerated list of common causes. The `grep -r "http" .` self-check is a useful pre-submission heuristic worth calling out.
 - **For `scripts/validate-cws.ts`:** add/extend a rule that flags `<script src="http…">` in any HTML entrypoint and `eval(`/`new Function(` in bundled JS. Failure message should emit "likely Blue Argon: MV3 remote-code violation — bundle all logic into the ZIP."
 - **For the template itself:** WXT's Vite-based bundling already defaults to local-bundle output. Document in `docs/09` that this is the reason to prefer the factory over a hand-rolled manifest — MV3 compliance is the default, not an opt-in.
 

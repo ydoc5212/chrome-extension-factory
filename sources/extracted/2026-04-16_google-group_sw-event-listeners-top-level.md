@@ -14,7 +14,7 @@ topics:
   - keepalive
   - sync-storage
 feeds_docs:
-  - docs/09-cws-best-practices.md
+  - docs/03-cws-best-practices.md
 ---
 
 # Oliver Dunk — Register SW listeners at top level + Chrome 120+ 30-second alarm floor
@@ -48,7 +48,7 @@ BoD's minimal repro lives at https://github.com/BoD/chrome-extension-alarm/tree/
 
 ## Implications for the factory
 
-- **For `docs/09-cws-best-practices.md`:** the "Service worker lifecycle" section already lists "Register every event listener synchronously at top level" — strengthen it with the BoD symptom ("works with devtools open, fails when closed") as the canonical diagnostic, and with Oliver's official-docs link to `developer.chrome.com/docs/extensions/develop/migrate/to-service-workers#register-listeners`. Add the Chrome-120+ 30-second alarm floor as a hard number. Add the `chrome.storage.onChanged` cross-device fact as a new bullet under a new "Cross-device state" subsection (currently unwritten).
+- **For `docs/03-cws-best-practices.md`:** the "Service worker lifecycle" section already lists "Register every event listener synchronously at top level" — strengthen it with the BoD symptom ("works with devtools open, fails when closed") as the canonical diagnostic, and with Oliver's official-docs link to `developer.chrome.com/docs/extensions/develop/migrate/to-service-workers#register-listeners`. Add the Chrome-120+ 30-second alarm floor as a hard number. Add the `chrome.storage.onChanged` cross-device fact as a new bullet under a new "Cross-device state" subsection (currently unwritten).
 - **For the validator (`scripts/validate-cws.ts`):** the existing `sw-listener-top-level` rule is marked "best-effort" in `docs/09`. Tighten it: scan `entrypoints/background.ts` (and any file matching `background*.ts`) for `chrome.*.onX.addListener(` calls; fail if the AST node is inside an async function, Promise chain, or any callback (`.then`, `addEventListener`, `setTimeout`, etc.). Reference this extraction in the failure message.
 - **For the template itself:** `entrypoints/background.ts` should have a top-of-file comment block: "All `chrome.*.onX.addListener` calls MUST be at the top level of this file, before any `await`. See sources/extracted/2026-04-16_google-group_sw-event-listeners-top-level.md for why." Consider shipping a pre-structured `background.ts` where all listener registrations are visually grouped at the top and business logic is factored into helpers they call.
 

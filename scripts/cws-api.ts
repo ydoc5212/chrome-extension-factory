@@ -10,7 +10,7 @@
  * cleanly if it returns null. The factory must stay green on a fresh clone
  * with no OAuth secrets configured.
  *
- * See docs/08-keepalive-publish.md for how to obtain the 4 secrets.
+ * See docs/06-keepalive-publish.md for how to obtain the 4 secrets.
  */
 
 import { createReadStream } from 'node:fs';

@@ -12,7 +12,7 @@ topics:
   - content-scripts
   - activeTab
 feeds_docs:
-  - docs/09-cws-best-practices.md
+  - docs/03-cws-best-practices.md
 ---
 
 # Simeon Vincent — `content_scripts.matches` is evaluated for review breadth, independently of `host_permissions`
@@ -42,7 +42,7 @@ A secondary thread gem: Daniel Glazman pushes back that the `tabs` permission wa
 
 ## Implications for the factory
 
-- **For `docs/09-cws-best-practices.md`:** the `content-scripts-matches-breadth` rule is already cited; add the OP's diagnostic narrative as a footnote — "if the banner fires and your `permissions` is empty, check `content_scripts.matches` before filing a support ticket." Also note Simeon's Mar 25 clarification: the `tabs` permission is *less* of a review driver than broad `matches`, contrary to what the early Feb reply implied. The review heuristic is web-surface breadth across *any* manifest key.
+- **For `docs/03-cws-best-practices.md`:** the `content-scripts-matches-breadth` rule is already cited; add the OP's diagnostic narrative as a footnote — "if the banner fires and your `permissions` is empty, check `content_scripts.matches` before filing a support ticket." Also note Simeon's Mar 25 clarification: the `tabs` permission is *less* of a review driver than broad `matches`, contrary to what the early Feb reply implied. The review heuristic is web-surface breadth across *any* manifest key.
 - **For the validator (`scripts/validate-cws.ts`):** the `content-scripts-matches-breadth` rule should list the same broad patterns used in `host-permissions-breadth` (`*://*/*`, `https://*/*`, `<all_urls>`, and near-equivalents like `http://*/*`) and emit identical review-time wording so a developer who fixes one rule doesn't assume the other is independent. Suggested fix hint: "drop declarative `content_scripts`, inject via `chrome.scripting.executeScript` from a `chrome.action.onClicked` or `chrome.contextMenus.onClicked` handler with `activeTab`."
 - **For the template itself:** `entrypoints/content.ts` defaults to a declarative content script with `matches: ["<all_urls>"]` via WXT. Ship a second profile (referenced in `docs/01-extension-type-profiles.md`) where `content.ts` is deleted and `entrypoints/background.ts` gains an `chrome.action.onClicked` handler that calls `chrome.scripting.executeScript`. That variant should be the default for user-invoked extensions.
 

@@ -44,7 +44,7 @@ Parse the JSON. The envelope is:
     { "rule": "listing-ready-name", "severity": "error", "message": "...", "why": "...", "source": "...", "fix": "...", "locations": [] },
     ...
   ],
-  "docUrl": "docs/09-cws-best-practices.md"
+  "docUrl": "docs/03-cws-best-practices.md"
 }
 ```
 
@@ -661,7 +661,7 @@ Re-runs validator. Final state:
   "rulesRun": 15,
   "summary": { "errors": 0, "warnings": 0 },
   "findings": [],
-  "docUrl": "docs/09-cws-best-practices.md"
+  "docUrl": "docs/03-cws-best-practices.md"
 }
 ```
 

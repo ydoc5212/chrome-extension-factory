@@ -12,7 +12,7 @@ topics:
   - obfuscation
   - red-titanium
 feeds_docs:
-  - docs/09-cws-best-practices.md
+  - docs/03-cws-best-practices.md
 ---
 
 # Red Titanium — obfuscation check flags dynamic URL construction, not just minification

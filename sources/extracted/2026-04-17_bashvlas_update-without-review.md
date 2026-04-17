@@ -12,8 +12,7 @@ topics:
   - manifest-v3
   - update-triggers
 feeds_docs:
-  - docs/09-cws-best-practices.md
-  - docs/03-chrome-web-store-submission.md
+  - docs/03-cws-best-practices.md
 ---
 
 # Bashvlas — Server-side config for site selectors: add supported sites without shipping a new version
@@ -42,8 +41,8 @@ The **official docs link** is load-bearing: `https://developer.chrome.com/docs/e
 
 ## Implications for the factory
 
-- **For `docs/09-cws-best-practices.md`:** under "Updates & re-review triggers," add a positive bullet: "Remote configuration for *data* (site selectors, feature flags, URL patterns, strings) avoids re-review when you add support. This is officially recommended — see the `improve-security#configuration-drive` docs. Do not conflate with remote *code*, which is banned."
-- **For `docs/03-chrome-web-store-submission.md`:** add a "What triggers re-review vs. what doesn't" quick-reference:
+- **For `docs/03-cws-best-practices.md`:** under "Updates & re-review triggers," add a positive bullet: "Remote configuration for *data* (site selectors, feature flags, URL patterns, strings) avoids re-review when you add support. This is officially recommended — see the `improve-security#configuration-drive` docs. Do not conflate with remote *code*, which is banned."
+- **For `docs/03-cws-best-practices.md`:** add a "What triggers re-review vs. what doesn't" quick-reference:
   - Triggers re-review: new manifest permissions, new code, significant code diffs.
   - Doesn't: server-side config changes (site allow-lists, feature flags, content strings).
 - **For the template itself:** ship a `utils/remote-config.ts` helper with the canonical safe pattern:

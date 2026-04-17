@@ -14,7 +14,7 @@ topics:
   - reliability
   - chromium-bug
 feeds_docs:
-  - docs/09-cws-best-practices.md
+  - docs/03-cws-best-practices.md
 ---
 
 # Chromium issue #40805401 — SW goes "stale" after auto-update, unresolved since 2021
@@ -67,7 +67,7 @@ This is not rare bad-luck territory — it's a consistent low-percentage failure
 
 ## Implications for the factory
 
-- **For `docs/09-cws-best-practices.md`:** add a new "Known MV3 reliability issues" section under Service Worker Lifecycle. First bullet: "~0.01–1% of auto-update events leave the SW in a silent failure state (Chromium #40805401, open as of 2025). No programmatic fix; design your user-facing flows to recover gracefully." Link this extraction + the Chromium bug.
+- **For `docs/03-cws-best-practices.md`:** add a new "Known MV3 reliability issues" section under Service Worker Lifecycle. First bullet: "~0.01–1% of auto-update events leave the SW in a silent failure state (Chromium #40805401, open as of 2025). No programmatic fix; design your user-facing flows to recover gracefully." Link this extraction + the Chromium bug.
 - **For the validator (`scripts/validate-cws.ts`):** add a `ship` mode **warning** (not an error): if `entrypoints/background.ts` uses `chrome.runtime.onUpdateAvailable` with `chrome.runtime.reload()`, emit a note about the SW-stale race condition and suggest either skipping forced-update or adding the content-script ping recovery pattern below.
 - **For the template itself:** ship a new `utils/sw-liveness.ts` helper implementing the practitioner-consensus detection heuristic:
   - From a content script or popup, send a lightweight ping to the SW.
@@ -75,7 +75,7 @@ This is not rare bad-luck territory — it's a consistent low-percentage failure
   - On timeout, surface a non-blocking notification ("Extension needs a refresh — click to reload") that calls `chrome.runtime.reload()` when clicked.
   Wire it into the factory's `entrypoints/content.ts` as an example pattern with a prominent comment linking this extraction.
 - **For `docs/01-extension-type-profiles.md`:** the "full hybrid" and "content-script-only" profiles should both include this liveness-check pattern by default. User can delete it if they don't need it, but the opt-in cost of "detect stale SW" is too high to expect everyone to discover this from scratch.
-- **For `docs/10-onboarding.md`:** the welcome/onboarding page is a natural place to document the stale-SW recovery for end users ("If the extension stops responding, click here to reload it"). Consider a self-healing "reload extension" button that any user can find.
+- **For `docs/05-useful-patterns.md`:** the welcome/onboarding page is a natural place to document the stale-SW recovery for end users ("If the extension stops responding, click here to reload it"). Consider a self-healing "reload extension" button that any user can find.
 
 ## Provenance
 

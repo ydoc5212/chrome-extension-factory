@@ -14,7 +14,7 @@ topics:
   - fake-reviews
   - reporting-process
 feeds_docs:
-  - docs/09-cws-best-practices.md
+  - docs/03-cws-best-practices.md
 ---
 
 # Palant — The CWS moderation system: automation-first, inconsistent, and the Featured badge is meaningless
@@ -29,7 +29,7 @@ This is the "opposition brief" for every piece of CWS advice in `docs/09`. Palan
 
 Three practitioner-relevant consequences:
 
-**(a) Don't trust the Featured badge as a competitive signal.** If a factory-user's extension competes against a Featured extension, that badge isn't evidence of quality — it's evidence of meeting the automated criteria (user count, MV3 manifest, checkbox-complete listing page). Palant documents Featured extensions that are identical clones of removed-for-malware extensions. The badge weighs heavily in CWS rankings, so malicious actors invest in getting it; this is public strategy documented in the monetization-company README Palant links. Our `docs/05-launch-materials.md` and any "how to get featured" playbook should describe the badge as discoverability leverage, not quality validation.
+**(a) Don't trust the Featured badge as a competitive signal.** If a factory-user's extension competes against a Featured extension, that badge isn't evidence of quality — it's evidence of meeting the automated criteria (user count, MV3 manifest, checkbox-complete listing page). Palant documents Featured extensions that are identical clones of removed-for-malware extensions. The badge weighs heavily in CWS rankings, so malicious actors invest in getting it; this is public strategy documented in the monetization-company README Palant links. Our `docs/05-useful-patterns.md` and any "how to get featured" playbook should describe the badge as discoverability leverage, not quality validation.
 
 **(b) Reviews are actively gamed.** Patterns to teach in docs: N-reviews-on-one-day spikes (Palant's 19 five-stars on Sept 19 for a proxy extension = "obviously fake"), incentivized reviews (refoorest "plant a tree for a review"), and the simple rule that any product with average rating > 4.0 is suspect. A factory-user's own extension should avoid incentivizing reviews — it's a stated CWS anti-spam violation even though enforcement is lax.
 
@@ -50,13 +50,13 @@ One-stop-support complaint follow-up: Google responded via email confirming "we 
 
 ## Implications for the factory
 
-- **For `docs/09-cws-best-practices.md`:** add a "Dealing with the moderation reality" section — not advice on following policy (already covered), but calibration on what the policy signals mean. Bullets:
+- **For `docs/03-cws-best-practices.md`:** add a "Dealing with the moderation reality" section — not advice on following policy (already covered), but calibration on what the policy signals mean. Bullets:
   - Featured badge is automated; don't treat competitors' Featured status as quality evidence
   - CWS reviews above 4.0 avg are likely gamed; set your own rating expectations accordingly
   - The real bug/malicious-extension report URL is the "One Stop Support" hidden link; cite it
   - Expect no visibility into enforcement after you report something
   - DDPRP was discontinued Aug 2024 — no more bug-bounty channel to reach a human
-- **For `docs/05-launch-materials.md`:** reframe "how to get featured" as discoverability leverage, not quality validation. Include that the criteria appear to be: MV3 manifest, user count, complete listing, privacy checkbox — not an actual quality audit.
+- **For `docs/05-useful-patterns.md`:** reframe "how to get featured" as discoverability leverage, not quality validation. Include that the criteria appear to be: MV3 manifest, user count, complete listing, privacy checkbox — not an actual quality audit.
 - **For `docs/11-competitive-intel.md` (new):** document the existence of extension clusters (Palant's "108-extension cluster" for example) and teach the factory user how to check whether their niche has a malicious cluster they're competing against. A legit extension in a clone-flooded niche needs to differentiate visually and in the listing copy.
 - **For the validator (`scripts/validate-cws.ts`):** not applicable. This extraction is about the moderation ecosystem, not static manifest rules.
 - **For the template itself:** not applicable.

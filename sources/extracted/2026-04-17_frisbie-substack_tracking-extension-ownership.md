@@ -12,7 +12,7 @@ topics:
   - supply-chain
   - user-awareness
 feeds_docs:
-  - docs/09-cws-best-practices.md
+  - docs/03-cws-best-practices.md
 ---
 
 # Frisbie — Extension ownership transfers are invisible to users; "Under New Management" detects them; a WECG API fix is proposed
@@ -47,7 +47,7 @@ The proposed API change (WECG issue #558) isn't yet specified — as of this ext
 
 ## Implications for the factory
 
-- **For `docs/09-cws-best-practices.md`:** add an "Ownership transfer" bullet under a new "Supply-chain considerations" section. Cite Frisbie's "Under New Management" as a user-facing defense. Note that this is the user-protection frame for the same problem Palant's 02-03 teardown documents (acquired extensions pushing malicious updates).
+- **For `docs/03-cws-best-practices.md`:** add an "Ownership transfer" bullet under a new "Supply-chain considerations" section. Cite Frisbie's "Under New Management" as a user-facing defense. Note that this is the user-protection frame for the same problem Palant's 02-03 teardown documents (acquired extensions pushing malicious updates).
 - **For a new `docs/11-supply-chain.md`:** seed the doc with three concerns: (1) extension ownership can transfer silently, (2) npm dependencies in your extension can be hijacked similarly, (3) CWS does not currently surface transfer events to users or reviewers. Propose a project-internal policy: document the factory extension's ownership-transfer commitment (e.g., "if this repo is transferred to a new owner, we will publish a last-version-from-original-owner advisory").
 - **For the validator (`scripts/validate-cws.ts`):** not applicable — this is about post-install user experience, not static manifest analysis. But worth considering a `ship` mode message: "If you plan to sell this extension in the future, review sources/extracted/2026-04-17_frisbie-substack_tracking-extension-ownership.md for ownership-transfer best practices."
 - **For the template itself:** `entrypoints/welcome/` (or wherever the onboarding page lives) could link to "Under New Management" as a recommended companion install. Controversial — it makes the factory endorse a specific tool — but a good-faith pro-user signal.

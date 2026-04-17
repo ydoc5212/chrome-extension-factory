@@ -12,7 +12,7 @@ topics:
   - privacy
   - privacy-policy
 feeds_docs:
-  - docs/09-cws-best-practices.md
+  - docs/03-cws-best-practices.md
 ---
 
 # Coditude — Purple Family rejections mean privacy-policy, consent, or transport issues around user data
@@ -53,7 +53,7 @@ Coditude's pre-resubmission privacy checklist (worth lifting verbatim): accessib
 
 ## Implications for the factory
 
-- **For `docs/09-cws-best-practices.md` → "Privacy & data handling" section:** add the Purple Family rejection labels and Coditude's privacy-policy hosting rules (HTTPS public URL, not Google Docs / PDF / GitHub raw). Add the purpose-permission cross-check as a reviewer heuristic — this is load-bearing for understanding why over-scoped permissions also trigger privacy-family rejections.
+- **For `docs/03-cws-best-practices.md` → "Privacy & data handling" section:** add the Purple Family rejection labels and Coditude's privacy-policy hosting rules (HTTPS public URL, not Google Docs / PDF / GitHub raw). Add the purpose-permission cross-check as a reviewer heuristic — this is load-bearing for understanding why over-scoped permissions also trigger privacy-family rejections.
 - **For `scripts/validate-cws.ts`:** add a rule that verifies the listing's `privacy_policy` URL (when present in submission config) is HTTPS and not on a denylisted host pattern (docs.google.com, drive.google.com, raw.githubusercontent.com, *.pdf). Also add a rule that flags `http://` endpoints in `host_permissions` or in bundled code — emit "likely Purple family: insecure transport."
 - **For the template itself:** `docs/templates/` should ship a privacy-policy boilerplate Markdown file aligned to Coditude's disclosure structure (what / why / who shared with / how to opt out). The QA checklist in `docs/templates/qa-checklist.md` should include the six-item pre-resubmission privacy list.
 

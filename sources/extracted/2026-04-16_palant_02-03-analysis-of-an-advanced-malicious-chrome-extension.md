@@ -15,7 +15,7 @@ topics:
   - remote-code
   - review-evasion
 feeds_docs:
-  - docs/09-cws-best-practices.md
+  - docs/03-cws-best-practices.md
 ---
 
 # Palant — How one malicious CWS extension chained declarativeNetRequest + DOM events to run remote code, and how reviewers missed it
@@ -55,14 +55,14 @@ Palant names the adindex advertising company and a specific developer as the hum
 
 ## Implications for the factory
 
-- **For `docs/09-cws-best-practices.md`:** add a new subsection "Patterns that look like malware (avoid these, or be ready for a slow review)":
+- **For `docs/03-cws-best-practices.md`:** add a new subsection "Patterns that look like malware (avoid these, or be ready for a slow review)":
   - `declarativeNetRequest` rules that `modifyHeaders` to remove CSP / X-Frame-Options / Permissions-Policy — if your legit extension needs this, document *why* in the permission justification and expect scrutiny.
   - Setting `onX` attributes on DOM elements from string data fetched from a server (Palant's exact trick).
   - Storing JS strings in `chrome.storage` and later feeding them to `setAttribute('onreset', ...)` or equivalent.
   - Server-gated activation patterns (extension behaves differently based on server response + time elapsed since install).
   Each bullet maps to a concrete malware-in-the-wild case; cite this extraction.
 - **For the validator (`scripts/validate-cws.ts`):** add rule `dnr-modify-headers-csp` — static-analyze any manifest or `declarativeNetRequest.updateDynamicRules` call for rules whose `action.responseHeaders` targets `content-security-policy` or `x-frame-options` with `operation: "remove"`. Hard fail: "this pattern is a known malware signature per sources/extracted/2026-04-16_palant_02-03-analysis-..."
-- **For `docs/04-staleness-prevention.md` or a new `docs/11-ownership-changes.md`:** when evaluating whether to use a third-party JS library in an extension, check whether the underlying npm package has had ownership changes recently. The same attack surface applies at the package level as at the extension level — acquired packages that suddenly escalate privileges are a known supply-chain pattern. The factory should document "vendor pinning" as a first-class concern.
+- **For `docs/00-getting-started.md` or a new `docs/11-ownership-changes.md`:** when evaluating whether to use a third-party JS library in an extension, check whether the underlying npm package has had ownership changes recently. The same attack surface applies at the package level as at the extension level — acquired packages that suddenly escalate privileges are a known supply-chain pattern. The factory should document "vendor pinning" as a first-class concern.
 - **For the template itself:** `wxt.config.ts` should default to *no* `declarativeNetRequest` permission. If a downstream extension needs it, they add it intentionally — don't ship the capability by default.
 
 ## Provenance

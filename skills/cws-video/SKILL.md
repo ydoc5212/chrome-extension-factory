@@ -104,7 +104,7 @@ For 60-second and 90-second versions, stretch each beat but keep the arc.
 
 Walk the user through each beat. For each, ask:
 
-1. **Visual:** what should be on screen during this beat? Be specific enough that a human director could shoot it. "A GitHub PR page loads; the extension popup slides in from the right; yellow pulse on the reviewer avatar you were asked to review." — not "show the extension working."
+1. **Visual:** what should be on screen during this beat? Be specific enough that a human director could shoot it. "A GitHub PR page loads; the extension popup slides in from the right; yellow pulse on the reviewer avatar you were asked to review." — not "show the extension working." If they need to record their own screen footage, suggest [Cap](https://cap.so) — it's a free, open-source screen recorder that exports clean MP4s.
 2. **Caption:** one short line of on-screen text. ~8 words. Don't repeat what the visual already shows.
 3. **Narration (optional):** one sentence spoken over this beat. Omit if the video is captions-only.
 

@@ -74,7 +74,7 @@ Parse the JSON envelope. Schema (`schemaVersion: 1`):
   "findings": [
     { "rule": "<rule-id>", "severity": "error|warn", "message": "...", "why": "...", "source": "...", "fix": "...", "locations": [] }
   ],
-  "docUrl": "docs/09-cws-best-practices.md"
+  "docUrl": "docs/03-cws-best-practices.md"
 }
 ```
 
@@ -179,7 +179,7 @@ Wait for explicit confirmation (`patch`, `minor`, `major`). Then run the corresp
 > CWS API secrets aren't configured (`CWS_EXTENSION_ID`, `CWS_CLIENT_ID`, `CWS_CLIENT_SECRET`, `CWS_REFRESH_TOKEN`). Without them, I can't verify your version against the live store or auto-publish. Pick:
 >
 > **(a) Proceed manually.** I'll run `npm run check:cws:ship && wxt zip` to produce `.output/<name>-chrome.zip`. You upload that to [the CWS developer dashboard](https://chrome.google.com/webstore/devconsole) yourself.
-> **(b) Configure secrets first.** See `docs/08-keepalive-publish.md` for the 4-secret OAuth walkthrough. Come back when it's set up.
+> **(b) Configure secrets first.** See `docs/06-keepalive-publish.md` for the 4-secret OAuth walkthrough. Come back when it's set up.
 > **(c) Cancel.**
 
 If (a): skip Phase C's version check and go straight to a manual zip flow (see "Manual submission fallback" below). If (b): exit with a clear "pick this up after secrets are set." If (c): exit.
@@ -197,7 +197,7 @@ Default recommendation is (a). Wait for confirmation before running `npm version
 
 > version-sync errored: `<error>`. This usually means OAuth auth failed — your refresh token may have expired. Options:
 >
-> **(a) Fix secrets and retry.** See `docs/08-keepalive-publish.md`.
+> **(a) Fix secrets and retry.** See `docs/06-keepalive-publish.md`.
 > **(b) Proceed manually.** Skip automated publish; produce a zip and upload via the dashboard.
 > **(c) Cancel.**
 
@@ -285,7 +285,7 @@ Do not over-celebrate. One sentence of acknowledgment, then a practical next-ste
 > What to do:
 > 1. Check the [CWS dashboard](https://chrome.google.com/webstore/devconsole) for status.
 > 2. If you want me to re-check, invoke me with `/cws-ship status` — I'll re-poll `publish-cws` against the existing submission.
-> 3. If >1 week goes by with no update, email developer support (link in `docs/09-cws-best-practices.md`).
+> 3. If >1 week goes by with no update, email developer support (link in `docs/03-cws-best-practices.md`).
 
 Stop.
 
@@ -304,7 +304,7 @@ Once a code is identified, invoke the matching recipe.
 > Publish call failed (not rejected — the request itself errored): `<detail>`.
 >
 > Usually this is:
-> - **Auth** — OAuth token expired. Re-mint per `docs/08-keepalive-publish.md`.
+> - **Auth** — OAuth token expired. Re-mint per `docs/06-keepalive-publish.md`.
 > - **Rate limit** — CWS throttles submit calls. Wait 5-10 minutes and retry.
 > - **Zip missing / corrupted** — re-run `wxt zip` (or `npm run ship` which does it) and retry.
 >
@@ -543,7 +543,7 @@ If the rejection detail doesn't include a code or the code doesn't match any rec
 >
 > 1. **Check your publisher email.** CWS usually sends a more detailed rejection reason by email, naming a specific policy. When you have it, tell me the code (e.g. "Blue Argon", "Purple Lithium") and I'll run the matching recipe.
 > 2. **Check the CWS dashboard → your item → "Appeal / Get help"** for the full rejection reason.
-> 3. **Review `docs/09-cws-best-practices.md`** — the rejection categories are grouped there by color family.
+> 3. **Review `docs/03-cws-best-practices.md`** — the rejection categories are grouped there by color family.
 
 Do not guess. Do not invent a fix for a rejection you don't understand.
 
@@ -580,7 +580,7 @@ Output (abbreviated):
     { "rule": "ship-ready-welcome-config", "severity": "error", "message": "welcome/config.ts has placeholders", "fix": "..." },
     { "rule": "ship-ready-screenshots", "severity": "error", "message": ".output/screenshots/ has no PNGs", "fix": "..." }
   ],
-  "docUrl": "docs/09-cws-best-practices.md"
+  "docUrl": "docs/03-cws-best-practices.md"
 }
 ```
 
@@ -675,7 +675,7 @@ Skill says:
 
 > CWS API secrets aren't configured. Pick:
 > **(a) Proceed manually.** I'll produce `.output/review-radar-chrome.zip` — you upload it to the CWS dashboard yourself.
-> **(b) Configure secrets first.** See `docs/08-keepalive-publish.md`.
+> **(b) Configure secrets first.** See `docs/06-keepalive-publish.md`.
 > **(c) Cancel.**
 
 User picks **(a)**.

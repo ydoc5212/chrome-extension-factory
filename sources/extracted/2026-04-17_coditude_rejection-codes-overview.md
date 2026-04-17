@@ -12,8 +12,7 @@ topics:
   - policy-enforcement
   - quick-reference
 feeds_docs:
-  - docs/09-cws-best-practices.md
-  - docs/03-chrome-web-store-submission.md
+  - docs/03-cws-best-practices.md
 ---
 
 # Coditude — The systematic decoder table for CWS rejection codes (color → element → violation category → fix)
@@ -70,8 +69,8 @@ The single most useful artifact from Coditude is their decoder table. Reproduced
 
 ## Implications for the factory
 
-- **For `docs/09-cws-best-practices.md`:** add a dedicated "Rejection-code decoder" subsection. Paste the decoder table above (Coditude's table, with our citation) and reference this extraction. This is the single most useful quick-reference for a stressed developer reading a rejection email — put it front-and-center.
-- **For `docs/03-chrome-web-store-submission.md` (or a new `docs/12-rejection-recovery.md`):** build the full "you got rejected, what now?" playbook using Coditude's QA checklist as the starting point. Include the email-structure breakdown (code, description, next steps) and the Dashboard → Status-tab location.
+- **For `docs/03-cws-best-practices.md`:** add a dedicated "Rejection-code decoder" subsection. Paste the decoder table above (Coditude's table, with our citation) and reference this extraction. This is the single most useful quick-reference for a stressed developer reading a rejection email — put it front-and-center.
+- **For `docs/03-cws-best-practices.md` (or a new `docs/12-rejection-recovery.md`):** build the full "you got rejected, what now?" playbook using Coditude's QA checklist as the starting point. Include the email-structure breakdown (code, description, next steps) and the Dashboard → Status-tab location.
 - **For `scripts/validate-cws.ts`:** each validator rule should emit a likely **color-element code** in its failure message, not just a description. E.g., instead of "broad host permissions detected," emit "likely Purple Potassium: excessive/unused permissions — scope to activeTab or narrow patterns." This maps our local check to the CWS vocabulary reviewers use.
 - **For the template itself:** the factory's `docs/templates/qa-checklist.md` should include Coditude's pre-resubmission items, especially "install the packed .zip locally in Chrome before resubmit" — that one catches packing mistakes that the unzipped dev build doesn't surface.
 

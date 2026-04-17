@@ -15,7 +15,7 @@ topics:
   - html-injection
   - review-evasion
 feeds_docs:
-  - docs/09-cws-best-practices.md
+  - docs/03-cws-best-practices.md
 ---
 
 # Palant — The remote-code ban has a loophole: inject HTML (not JS) into page context + strip CSP, and you run arbitrary code in every visited page
@@ -81,7 +81,7 @@ An invisible 1×1 image whose `onload` handler runs JS (fetched from the server,
 
 ## Implications for the factory
 
-- **For `docs/09-cws-best-practices.md`:** add a "Manifest V3 code requirements" sub-bullet that the remote-code ban applies to extension context only — HTML injected into page context with JS event handlers is *not* covered. A legit extension should therefore avoid:
+- **For `docs/03-cws-best-practices.md`:** add a "Manifest V3 code requirements" sub-bullet that the remote-code ban applies to extension context only — HTML injected into page context with JS event handlers is *not* covered. A legit extension should therefore avoid:
   - injecting HTML from any remote source unsanitized
   - injecting HTML with inline event handlers (`onX="..."` attributes)
   - declarativeNetRequest `modifyHeaders` rules that remove security headers (CSP, X-Frame-Options, Permissions-Policy, Content-Security-Policy-Report-Only)
@@ -91,7 +91,7 @@ An invisible 1×1 image whose `onload` handler runs JS (fetched from the server,
   - `dnr-urlfilter-wildcard`: warn if a rule's `condition.urlFilter` is `"*"` combined with `modifyHeaders` (legit use cases exist but they're rare and reviewers will scrutinize).
   - `inline-event-handler-in-injected-html`: lint helper — if `content_scripts` or a background script uses `innerHTML`/`insertAdjacentHTML` with a template that contains `onload=`, `onerror=`, etc., warn. (Can be noisy; make it advisory, not blocking.)
 - **For the template itself:** `wxt.config.ts` should NOT include `declarativeNetRequest` in permissions by default (already noted in the 02-03 extraction). Also: if the factory adds a "content-script injection" example, use `textContent` / `element.append(node)` DOM APIs, never `innerHTML` with untrusted data — document this rule in the template.
-- **For `docs/06-security.md`:** expand the CSP section with the "MV3 ban has a loophole" framing. Any time a factory-user's extension needs to inject into page context, they should (a) sanitize all content, (b) never use inline event handlers, (c) justify declarativeNetRequest rules explicitly in the manifest comments.
+- **For `docs/04-security.md`:** expand the CSP section with the "MV3 ban has a loophole" framing. Any time a factory-user's extension needs to inject into page context, they should (a) sanitize all content, (b) never use inline event handlers, (c) justify declarativeNetRequest rules explicitly in the manifest comments.
 
 ## Provenance
 

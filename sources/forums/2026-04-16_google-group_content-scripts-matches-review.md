@@ -33,7 +33,7 @@ accepted_answer: null
 **Context:** OP (Richard Bernstein) got the literal developer-console warning *"Instead of requesting broad host permissions or content script site matches, consider specifying the sites that your extension needs access to, or use the activeTab permission"* when uploading. His manifest had `"activeTab"` already declared, which surprised him. The cause in his case turned out to be his `permissions` array (specific URL patterns like `https://www.rdsubstantiation.com/sub_crud/*.*`) — those patterns are treated as broad host permissions for review purposes.
 
 **Two rules assembled from this one thread:**
-1. Content-script `matches` count as host permissions for CWS review, even with a clean `host_permissions` array — confirmed directly by Chrome DevRel. Maps to validator rule `content-scripts-matches-breadth` in `docs/09-cws-best-practices.md`.
+1. Content-script `matches` count as host permissions for CWS review, even with a clean `host_permissions` array — confirmed directly by Chrome DevRel. Maps to validator rule `content-scripts-matches-breadth` in `docs/03-cws-best-practices.md`.
 2. The review-speed remedy is `activeTab` + `chrome.tabs.executeScript` (now `chrome.scripting.executeScript` in MV3) — injected from a user-gesture callback, no `tabs` permission needed. Maps to the review-friendly pattern cited in the headline finding of `docs/09`.
 
 The literal console warning text ("*Instead of requesting broad host permissions...*") appears in this thread but not on `developer.chrome.com` — the recipe is assembled here, not in the docs.

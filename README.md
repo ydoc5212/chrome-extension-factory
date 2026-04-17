@@ -106,19 +106,13 @@ Profiles: content-script-only, popup-based, side-panel app, full hybrid. See [do
 | `npm run version-sync` | Compare local version to live CWS version (no-ops without CWS secrets) |
 | `npm run ship` | End-to-end publish: `check:cws:ship` → `version-sync` → `wxt zip` → upload & poll (no-ops at publish step without secrets) |
 | `npm run screenshots` | Render 1280×800 CWS screenshots from `screenshots/config.ts` |
-| `npm run capture:source` | Capture a URL into `sources/` with provenance |
-| `npm run index:sources` | Regenerate `sources/_index/*` from capture frontmatter |
 | `npm run dev:firefox` | Dev server for Firefox |
 
 ## Keepalive Publish
 
-Scheduled GitHub Action bumps the patch version and re-publishes every 4 months so your Chrome Web Store listing doesn't get flagged as stale. Opt-in: add 4 CWS API secrets to your repo and the workflow activates itself. See [docs/08-keepalive-publish.md](docs/08-keepalive-publish.md).
+Scheduled GitHub Action bumps the patch version and re-publishes every 4 months so your Chrome Web Store listing doesn't get flagged as stale. Opt-in: add 4 CWS API secrets to your repo and the workflow activates itself. See [docs/06-keepalive-publish.md](docs/06-keepalive-publish.md).
 
-## Knowledge Pipeline
-
-The factory ships three layers: **scaffolding** (the extension template), **distilled playbooks** (`docs/`), and **raw sources** (`sources/`). `sources/` holds primary evidence — captured Chrome docs pages, DevRel forum threads, community writeups — with frontmatter that records URL + retrieval date + Wayback snapshot so the knowledge survives link rot. That's what makes `docs/09-cws-best-practices.md` more than a random checklist: every claim can be traced back to something you can re-read.
-
-Capture a new source: `npm run capture:source -- <url> --type=official|forum|blog`. See [sources/README.md](sources/README.md) for the full pipeline.
+**Knowledge sources:** `sources/` holds frozen citations behind doc claims. New CWS knowledge enters via validator rules + skill recipes — see `ARCHITECTURE.md`.
 
 ## Docs
 
@@ -127,13 +121,9 @@ Capture a new source: `npm run capture:source -- <url> --type=official|forum|blo
 - [Getting Started](docs/00-getting-started.md)
 - [Extension Type Profiles](docs/01-extension-type-profiles.md)
 - [Development Workflow](docs/02-development-workflow.md)
-- [Chrome Web Store Submission](docs/03-chrome-web-store-submission.md)
-- [Staleness Prevention](docs/04-staleness-prevention.md)
-- [Launch Materials](docs/05-launch-materials.md) — CWS screenshots via `/cws-screens`, iOS via `/app-store-screenshots`
-- [Security](docs/06-security.md)
-- [Useful Patterns](docs/07-useful-patterns.md)
-- [Keepalive Publish](docs/08-keepalive-publish.md)
-- [CWS Best Practices](docs/09-cws-best-practices.md) — rules the Chrome Web Store enforces but doesn't assemble in one place
-- [Welcome / Onboarding](docs/10-onboarding.md) — the post-install welcome page pattern, when to keep, when to delete
+- [CWS Best Practices](docs/03-cws-best-practices.md) — rules the Chrome Web Store enforces but doesn't assemble in one place; includes submission mechanics
+- [Security](docs/04-security.md)
+- [Useful Patterns](docs/05-useful-patterns.md) — utilities, messaging, welcome page pattern
+- [Keepalive Publish](docs/06-keepalive-publish.md)
 - Templates: [Privacy Policy](docs/templates/privacy-policy.md) · [Store Listing](docs/templates/store-listing.md) · [QA Checklist](docs/templates/qa-checklist.md)
-- [Sources](sources/README.md) — raw captures (official docs, forums, blogs) with provenance; the evidence layer behind the playbooks
+- [Sources](sources/README.md) — frozen citation footnotes behind the playbooks
