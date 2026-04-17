@@ -88,9 +88,16 @@ Profiles: content-script-only, popup-based, side-panel app, full hybrid. See [do
         ▼
    5. SCREENSHOTS    /cws-screens skill → screenshots/ → npm run screenshots
         ▼
-   6. ZIP            npm run zip    → uploadable .zip
+   6. ZIP            npm run zip    → gated on check:cws:ship
         ▼
-   7. SUBMIT         upload to Chrome Web Store
+   7. SUBMIT         npm run ship   (or upload .zip manually to CWS)
+        ▼
+   8. REVIEW         CWS review → live on store   ◄──┐
+        ▼                                            │
+   9. ITERATE        bug fixes / features ───────────┘  (back to DEV)
+        ▼
+  10. KEEPALIVE      GitHub Action auto-bumps + republishes every 4 months
+                     so the listing doesn't go stale (opt-in via 4 secrets)
 ```
 
 ## Commands
@@ -108,12 +115,6 @@ Profiles: content-script-only, popup-based, side-panel app, full hybrid. See [do
 | `npm run screenshots` | Render 1280×800 CWS screenshots from `screenshots/config.ts` |
 | `npm run dev:firefox` | Dev server for Firefox |
 
-## Keepalive Publish
-
-Scheduled GitHub Action bumps the patch version and re-publishes every 4 months so your Chrome Web Store listing doesn't get flagged as stale. Opt-in: add 4 CWS API secrets to your repo and the workflow activates itself. See [docs/06-keepalive-publish.md](docs/06-keepalive-publish.md).
-
-**Knowledge sources:** `sources/` holds frozen citations behind doc claims. New CWS knowledge enters via validator rules + skill recipes — see `ARCHITECTURE.md`.
-
 ## Docs
 
 - [**Architecture**](ARCHITECTURE.md) — design philosophy, division of labor (scripts vs. skills), how to extend
@@ -126,4 +127,3 @@ Scheduled GitHub Action bumps the patch version and re-publishes every 4 months 
 - [Useful Patterns](docs/05-useful-patterns.md) — utilities, messaging, welcome page pattern
 - [Keepalive Publish](docs/06-keepalive-publish.md)
 - Templates: [Privacy Policy](docs/templates/privacy-policy.md) · [Store Listing](docs/templates/store-listing.md) · [QA Checklist](docs/templates/qa-checklist.md)
-- [Sources](sources/README.md) — frozen citation footnotes behind the playbooks
