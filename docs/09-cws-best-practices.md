@@ -101,6 +101,20 @@ So "unwritten" is wrong in letter but right in spirit. Your first submission wit
 
 - **(a) Obfuscation is disallowed (Red Titanium).** Base64-encoded logic and character-encoding tricks count. Minification is allowed but slows review. Submit "code as authored." [Source.](https://developer.chrome.com/docs/webstore/review-process)
 
+  **Red Titanium false positive — dynamic URL construction.** The automated scanner can flag _legitimate_ code under Red Titanium when it sees URLs built by string concatenation (`"https://" + host + "/path"`). In the documented case the developer was allowlisting CDN failover domains — not obfuscating anything — but the single concatenation line was cited as the violation. Patrick Kettner (Chrome Extensions team) acknowledged "it sounds like a mistake of overzealous review" and recommended a One Stop Support appeal. The practical fix (per community advice from Stryder Crown) is to replace dynamic construction with a hardcoded domain array:
+
+  ```ts
+  // ❌ triggers Red Titanium (dynamic URL construction)
+  const endpoint = "https://" + host + "/api/" + path;
+  fetch(endpoint);
+
+  // ✓ hardcoded domain array
+  const ALLOWED_HOSTS = ["https://api.example.com", "https://api.example.org"] as const;
+  fetch(`${ALLOWED_HOSTS[0]}/api/${path}`);
+  ```
+
+  If you receive a Red Titanium rejection and dynamic URL construction is the cited snippet, appeal via [One Stop Support](https://support.google.com/chrome_webstore/contact/one_stop_support). *Validator: `red-titanium-dynamic-url-concat` (warn, scans built JS).* [Extracted forum.](../sources/extracted/2026-04-17_google-group_red-titanium-obfuscation-minify-confusion.md)
+
 - **(a) Code size affects review time.** "The more code an extension contains, the more work it takes to verify." [Source.](https://developer.chrome.com/docs/webstore/review-process)
 
 ## Service worker lifecycle (MV3 background)
@@ -237,7 +251,7 @@ When a rejection email arrives, the color-element code maps to a policy family. 
 | **Purple Nickel** | Prominent Data Disclosure | Data collection not tied to a described feature | Add affirmative consent at runtime + dashboard disclosure |
 | **Purple Magnesium** | Browsing-history collection | Collection not tied to a user-facing feature | Remove collection or tie to user-visible feature |
 | **Purple Copper** | HTTPS only | User data in URL query strings/headers | Move data to body, HTTPS transport |
-| **Red Titanium** | Obfuscation | Base64-encoded logic, character encoding tricks | Submit "code as authored" |
+| **Red Titanium** | Obfuscation | Base64-encoded logic, character encoding tricks; also false-positives on dynamic URL construction | Submit "code as authored"; replace string-concat URLs with hardcoded domain arrays; appeal via One Stop Support on false positives |
 | **Red Nickel/Potassium/Silicon** | Deceptive/impersonation | Misleading title/description/screenshots | Match listing to actual functionality |
 | **Red Zinc** | Deceptive install | Misleading CTA, hidden metadata | Clear install flows |
 | **Red Magnesium/Copper/Lithium/Argon** | Single-purpose | Multiple features bundled, ads + NTP + coupons | Split into separate submissions |
