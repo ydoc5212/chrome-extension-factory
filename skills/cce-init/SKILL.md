@@ -141,6 +141,45 @@ End with: "OK — let's customize this to your extension. First question is abou
 
 ---
 
+## Phase B2 — Front-loaded interview
+
+Collect every answer needed for Phases C, C2, D, E, E2, F in one pass. No scaffolding, no deletions, no delegation yet — just questions.
+
+Ask in this order, one at a time (wait for each answer before the next):
+
+1. **Pitch** — "In one or two sentences, what are you building?" (feeds Phase C recommendation + Phase C2 bespoke code)
+2. **Target sites** — "What URLs will this run on? Be specific (e.g., `https://news.ycombinator.com/*`) or say 'no host access needed' if you're only using `activeTab`." (feeds Phase C welcome-page decision + `wxt.config.ts` permissions)
+3. **Welcome page** — inferred from (2): if host access needed, keep welcome; if not, ask "delete the welcome page?" and default to yes.
+4. **Features** — ask once, comma-separated: "Any of: auth / persistent storage / keyboard shortcuts / background alarms / none?"
+5. **Listing basics** — "What's the extension's public name? (3–45 chars)" and "One-line tagline? (used as the CWS summary)"
+6. **Screenshots** — "Scaffold 5 CWS screenshots now, or defer? (now / defer)"
+7. **Video** — "Scaffold a launch video now, or defer? (now / defer)"
+8. **OAuth** — "Set up automated publishing credentials now, or defer? (now / defer)"
+
+After the user answers all 8, show a one-screen summary of what's about to happen:
+
+> Here's the plan:
+>
+> - Profile: <picked>
+> - Deletes: <list>
+> - Bespoke code in: <kept entrypoints>
+> - Listing: name "<name>", tagline "<tagline>"
+> - Screenshots: <now | defer>
+> - Video: <now | defer>
+> - OAuth: <now | defer>
+>
+> Run the plan? (yes / change something / cancel)
+
+On "yes": execute Phases C → C2 → D → E → E2 → F in order without re-interviewing.
+
+On "change something": ask which answer to revise, update it, re-show the summary.
+
+On "cancel": exit cleanly, no changes.
+
+**Important:** when delegating to `cws-content`, `cws-screens`, `cws-video` in later phases, pass the answers already collected here as context so those skills don't re-ask. If a sub-skill insists on re-interviewing, accept it — don't fight it — but prefer skills that accept pre-filled answers.
+
+---
+
 ## Phase C — Profile selection (pitch-driven)
 
 Use the pitch already collected in Phase B2. If for any reason it's missing (skill was invoked directly into Phase C), ask now: "In one or two sentences — what are you building?"
