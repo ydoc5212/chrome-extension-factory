@@ -43,14 +43,33 @@ The body of the file is the prompt Claude sees when the skill is invoked. Write 
 - **Recipe pattern:** one rule id → one conversational flow ("recipe"). Skills that handle multiple rule ids dispatch to named recipes, not nested if-else.
 - **Skills must re-run the relevant validator after each write** to confirm the rule id is cleared before moving to the next recipe.
 - **Declare `writes` in frontmatter.** The skill should not touch any file not listed there. This is the contract Session-aligned reviewers rely on.
+- **Declare `requires` in frontmatter if you depend on external skills.** See "External dependencies" below. Fail gracefully when a required skill is not installed — detect, print the install command, no-op.
 
 ## Skills in this repo
 
 | Skill | Status | Entry point | Purpose |
 |---|---|---|---|
 | `cws-content` | shipped (Session 2) | `/skills/cws-content/SKILL.md` | Interview user to fill listing copy, origins, and welcome-page config. Clears the 4 content errors in ship-mode validator. |
-| `cws-ship` | planned (Session 3) | — | Orchestrate full submission flow: delegate to cws-content, bump version, zip, submit, poll. |
-| `cws-screens` | planned (Session 4) | — | Walk user through 5 CWS-compliant screenshots via the `screenshots/` subproject. |
-| `cws-init` | planned (Session 5) | — | First-time onboarding: profile selection, initial cws-content pass, optional OAuth setup. |
+| `cws-screens` | shipped (Session 4) | `/skills/cws-screens/SKILL.md` | Walk user through 5 CWS-compliant screenshots via the `screenshots/` subproject. |
+| `cws-ship` | shipped (Session 3) | `/skills/cws-ship/SKILL.md` | Orchestrate full submission flow: delegate to cws-content / cws-screens, version-sync, zip, submit, poll, rejection-recovery. |
+| `cws-init` | shipped (Session 5) | `/skills/cws-init/SKILL.md` | First-time onboarding: profile selection, initial cws-content pass, optional cws-screens, optional OAuth setup. |
+| `cws-video` | planned | — | Wraps `heygen-com/hyperframes` for CWS launch-video generation. See External dependencies. |
 
-Sessions 3-5 follow the same directory and frontmatter convention documented above.
+## External dependencies
+
+Factory skills may wrap externally-published skills rather than reimplementing their capability. Install an external skill with:
+
+```bash
+npx skills add <namespace>/<skill-name>
+```
+
+| External skill | Install | Wrapped by | Purpose |
+|---|---|---|---|
+| `heygen-com/hyperframes` | `npx skills add heygen-com/hyperframes` | `cws-video` (planned) | Launch video generation for CWS listings. |
+
+When adding a new external dependency:
+
+1. Install and evaluate the skill locally before adopting.
+2. Add a row to the table above.
+3. The wrapping factory skill declares `requires: [heygen-com/hyperframes]` in its frontmatter.
+4. The wrapper probes for presence (e.g., `npx skills list | grep heygen-com/hyperframes`) and, on miss, prints the install command rather than erroring. Treat external deps like opt-in secrets: no red CI on a fresh clone that hasn't installed them.

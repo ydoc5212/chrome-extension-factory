@@ -1,10 +1,31 @@
 # Sources — Knowledge Provenance Layer
 
-> **➤ Next action:** open [`_mining-queue.md`](./_mining-queue.md) — the prioritized list of captures to make next. Discovery passes live in [`_discovery/`](./_discovery/).
+> **➤ Next action:** open [`_mining-queue.md`](./_mining-queue.md) — the prioritized list of captures to make next. Discovery passes live in [`_discovery/`](./_discovery/). Extraction format spec: [`extracted/README.md`](./extracted/README.md).
 
 Raw materials behind `docs/`. Everything under `docs/` makes claims; everything under `sources/` stores the evidence those claims came from, with enough fidelity to survive link rot.
 
 The factory's moat is not the scaffolding (WXT generates that) — it's the **curated knowledge**: which permissions trip manual review, which CSP values pass, which lifecycle quirks bite. That knowledge is synthesized from official docs, Chrome DevRel posts, and community writeups. `sources/` is where those raw materials live so you can re-read them, cite them precisely, and regenerate the distilled `docs/` playbooks from primary evidence.
+
+## The 3-stage pipeline
+
+```
+Stage 1: CAPTURE           Stage 2: EXTRACT           Stage 3: DISTILL
+─────────────────          ─────────────────          ─────────────────
+sources/{blogs,             sources/extracted/         docs/*.md
+  forums,official}/                                    (playbooks)
+
+raw scrape,        ➡       curator's synthesis  ➡    multi-source
+full fidelity              per-capture signal        knowledge piece
+(KB–MB each)               (~100 lines each)         (one topic, many
+                                                     extracted sources)
+npm run capture:source     (human or subagent)       (human author)
+```
+
+**Stage 1** is mechanical — `capture:source` does it. One URL → one raw file in `blogs/`, `forums/`, or `official/`.
+**Stage 2** is interpretive — you read the capture, lift the key insight into an extracted/ file (~100 lines; TL;DR + signal + quotes + implications + provenance pointer). See [`extracted/README.md`](./extracted/README.md) for the format.
+**Stage 3** is editorial — you cross-reference many extracted files on one topic to write a `docs/` playbook.
+
+Each stage is independently re-runnable. Bad synthesis? Re-extract from the intact raw capture. Docs need updating? Rewrite from extracted files without re-scraping. Captures outlive the sites they were scraped from (Wayback-pinned) so the pipeline survives link rot all the way up.
 
 ## Directory tour
 
@@ -25,9 +46,12 @@ sources/
   _index/                 # generated — do not edit by hand
     by-topic.md
     by-date.md
-  official/               # developer.chrome.com, MDN, Mozilla policies
-  forums/                 # chromium-extensions Google Group, SO, Reddit threads
-  blogs/                  # community writeups (Nearform, MacArthur, etc.)
+  official/               # [Stage 1] developer.chrome.com, MDN, Mozilla policies
+  forums/                 # [Stage 1] chromium-extensions Google Group, SO, Reddit threads
+  blogs/                  # [Stage 1] community writeups (Nearform, MacArthur, etc.)
+  extracted/              # [Stage 2] curator's synthesis per raw capture
+    README.md             #   format spec
+    2026-04-16_*.md       #   one extraction per raw capture (same basename)
 ```
 
 `_templates/`, `_scripts/`, `_index/` are underscore-prefixed so they sort to the top of each directory listing and signal "tooling, not data."

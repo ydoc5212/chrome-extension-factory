@@ -2,9 +2,16 @@
 
 # Sources by Date
 
-2 captures, newest first. Regenerate with `npm run index:sources`.
+9 captures, newest first. Regenerate with `npm run index:sources`.
 
 ## 2026-04-16
 
+- [Avoiding a "Host Permission" Review Delay When Publishing a Chrome Extension | Alex MacArthur](../blogs/2026-04-16_macarthur_posts-chrome-extension-host-permission.md) **(c)** · _blog_
+- [Chrome Web Store is a mess | Almost Secure](../blogs/2026-04-16_palant_01-13-chrome-web-store-is-a-mess.md) **(c)** · _blog_
+- [Malicious extensions circumvent Google’s remote code ban | Almost Secure](../blogs/2026-04-16_palant_01-20-malicious-extensions-circumvent-googles-remote-code-ba.md) **(c)** · _blog_
+- [Analysis of an advanced malicious Chrome extension | Almost Secure](../blogs/2026-04-16_palant_02-03-analysis-of-an-advanced-malicious-chrome-extension.md) **(c)** · _blog_
+- [MV3 service worker broken after auto-update](../forums/2026-04-16_google-group_auto-update-sw-race-condition.md) **(b)** · _forum_
 - [publishing delayed - Broad host permissions](../forums/2026-04-16_google-group_content-scripts-matches-review.md) **(b)** · _forum_
+- [Extension review time. How to improve it?](../forums/2026-04-16_google-group_review-times-deferred-publishing.md) **(b)** · _forum_
+- [MV3, (inactive) service workers, and alarms](../forums/2026-04-16_google-group_sw-event-listeners-top-level.md) **(b)** · _forum_
 - [chrome.permissions  |  API  |  Chrome for Developers](../official/2026-04-16_chrome-developers_reference-api-permissions.md) **(a)** · _official_

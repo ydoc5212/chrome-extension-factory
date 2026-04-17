@@ -25,19 +25,15 @@ Discovery artifacts that fed this queue:
 Captures `docs/09-cws-best-practices.md` already depends on. Finishing these unblocks retrofitting inline URLs in `docs/09` to `sources/` references.
 
 - [x] **Backfill Google Group `S1_uqpDFVzY`** — captured 2026-04-16 via `--render`. Signal extracted: content_scripts.matches count as host permissions for review; `activeTab`+`chrome.scripting.executeScript` is the review-friendly alternative. File: `forums/2026-04-16_google-group_content-scripts-matches-review.md`.
-- [ ] **Alex MacArthur — "Avoiding a Host Permission Review Delay"** — the single most cross-cited community post on the activeTab pattern. **(auto)**
-  URL: https://macarthur.me/posts/chrome-extension-host-permission/
+- [x] **Alex MacArthur — "Avoiding a Host Permission Review Delay"** — captured 2026-04-16. File: `blogs/2026-04-16_macarthur_posts-chrome-extension-host-permission.md`.
 
 ## Batch 2 — Tier-S forum: chromium-extensions Google Group
 
 The hub. Every other venue cross-links here. All **(auto --render)** — Playwright handles the JS rendering.
 
-- [ ] **`k5upFLVnPqE`** — SW keepalive + alarms, Oliver Dunk's canonical answer on registering event listeners at top-level. **(auto --render)**
-  URL: https://groups.google.com/a/chromium.org/g/chromium-extensions/c/k5upFLVnPqE
-- [ ] **`BrwVKyIvCMs`** — review times + deferred publishing, Deco (Chrome team) answer. **(auto --render)**
-  URL: https://groups.google.com/a/chromium.org/g/chromium-extensions/c/BrwVKyIvCMs
-- [ ] **`POU6sW-I39M`** — auto-update SW race condition, 80+ posts over 4 years, Chrome team engaged. **(auto --render)** — heavy thread, render may take longer.
-  URL: https://groups.google.com/a/chromium.org/g/chromium-extensions/c/POU6sW-I39M
+- [x] **`k5upFLVnPqE`** — captured 2026-04-16 via `--render`. Title: "MV3, (inactive) service workers, and alarms". File: `forums/2026-04-16_google-group_sw-event-listeners-top-level.md`.
+- [x] **`BrwVKyIvCMs`** — captured 2026-04-16 via `--render`. Title: "Extension review time. How to improve it?". File: `forums/2026-04-16_google-group_review-times-deferred-publishing.md`.
+- [x] **`POU6sW-I39M`** — captured 2026-04-16 via `--render`. Title: "MV3 service worker broken after auto-update". 86KB rendered (80+ posts). File: `forums/2026-04-16_google-group_auto-update-sw-race-condition.md`.
 - [ ] **Rejection-code sweep** — for each code below, Google `site:groups.google.com/a/chromium.org/g/chromium-extensions "<code>"` and capture the top 1–2 hits with **(auto --render)**. Codes: Blue Argon, Blue Nickel, Blue Potassium, Purple Lithium, Purple Nickel, Purple Magnesium, Purple Copper, Red Titanium, Red Zinc, Red Nickel, Red Potassium, Red Silicon, Yellow Zinc, Yellow Argon, Yellow Lithium, Yellow Nickel, Yellow Potassium, Grey Titanium.
 - [ ] **Oliver Dunk recent responses** — if the Group search supports filtering by poster, capture top 5 recent. Otherwise grep from the first few rejection-code captures for his replies and follow the thread IDs. **(auto --render)**
 
@@ -45,9 +41,11 @@ The hub. Every other venue cross-links here. All **(auto --render)** — Playwri
 
 **Gap in `docs/09`.** Palant is the most credible extension-security researcher on the internet — adblock dev since 2003, actively publishing MV3 circumvention teardowns in 2024–2025. His work inverts the rejection-code story: what extensions *actually* do to bypass policy.
 
-- [ ] **"Chrome Web Store is a mess"** (Jan 2025) — navigate from https://palant.info/ index. **(auto)**
-- [ ] **"Malicious extensions circumvent Google's remote code ban"** (2024). **(auto)**
-- [ ] **His extension-tag post index** — capture as a reference page to surface follow-up posts.
+- [x] **"Chrome Web Store is a mess"** (Jan 13 2025) — captured. File: `blogs/2026-04-16_palant_01-13-chrome-web-store-is-a-mess.md`.
+- [x] **"Malicious extensions circumvent Google's remote code ban"** (Jan 20 2025) — captured. File: `blogs/2026-04-16_palant_01-20-malicious-extensions-circumvent-googles-remote-code-ba.md`.
+- [x] **BONUS: "Analysis of an advanced malicious Chrome extension"** (Feb 3 2025) — captured as part of the same Palant CWS-security series. File: `blogs/2026-04-16_palant_02-03-analysis-of-an-advanced-malicious-chrome-extension.md`.
+- [ ] **His extension-tag post index** — capture as a reference page to surface follow-up posts. **(auto)**
+  URL: https://palant.info/categories/add-ons/
 
 ## Batch 4 — Tier-S blog: Matt Frisbie
 
