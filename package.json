@@ -21,8 +21,6 @@
     "test:validator": "wxt build && tsx scripts/__tests__/validator-snapshot.ts",
     "version-sync": "tsx scripts/version-sync.ts",
     "ship": "npm run check:cws:ship && tsx scripts/version-sync.ts && wxt zip && tsx scripts/publish-cws.ts",
-    "capture:source": "tsx sources/_scripts/capture.ts",
-    "index:sources": "tsx sources/_scripts/build-index.ts",
     "screenshots": "cd screenshots && npm install && npm run build && cd .. && tsx screenshots/capture.ts",
     "postinstall": "wxt prepare"
   },
