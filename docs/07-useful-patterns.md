@@ -152,3 +152,56 @@ const ok = await sendMessage('saveItem', { id: '1', value: 'hello' });  // typed
 ```
 
 Add new message types to `ProtocolMap` -- both sides get compile-time type safety automatically.
+
+---
+
+## Welcome / Onboarding Page Pattern
+
+The factory ships a generalized welcome page at `entrypoints/welcome/`. It's a single-page checklist that requests `optional_host_permissions` from a user gesture — the pattern that lets the install prompt stay empty and avoids the Chrome Web Store "in-depth review" banner (see `docs/03-cws-best-practices.md`).
+
+### When to keep it
+
+Keep it if **any** of these is true:
+- Your extension needs host permissions to do its core job (the welcome page is where you request them).
+- Your extension needs setup before it's useful (API key, account login, choosing a profile).
+- Users are likely to install your extension and forget the toolbar icon exists — the pin hint is worth the page on its own.
+
+### When to delete it
+
+Delete `entrypoints/welcome/` and revert the `tabs.create` call in `entrypoints/background.ts` if **all** of these are true:
+- Your extension works immediately with smart defaults (uBlock Origin / Vimium / Dark Reader model).
+- You don't need any host permissions, or you only need `activeTab` (no install prompt).
+- There's no setup, no key, no account.
+
+### Filling in `config.ts`
+
+Five things to set in `entrypoints/welcome/config.ts`:
+1. **`valueProp`** — one sentence, plain language.
+2. **`activationSurfaces`** — short bullets answering "where does this run?"
+3. **`steps`** — array of permission requests (label, justification, permissions, optional privacyNote/cta).
+4. **`demoMedia`** *(optional)* — a single image or muted-loop webm above the checklist.
+5. **`links`** — repo + issues + privacy URLs for the trust footer.
+
+### What the page does for you
+
+- Detects existing permissions on load via `hasPermissions` — pre-checks granted steps.
+- Listens for live permission changes via `watchPermissions` — revoking in `chrome://extensions` updates the page without reload.
+- Preserves the user-gesture chain — `chrome.permissions.request()` is called synchronously. Don't add an `await` before it or Chrome silently rejects the prompt.
+- Shows a pin hint (puzzle-piece icon) only after every step is granted.
+- Opens once — `entrypoints/background.ts` sets a `welcomeShown` flag after first install.
+
+### Anti-patterns to avoid
+
+- Multi-step tours / carousels / modals — users abandon at step 2.
+- Generic "Grant access" copy — the `justification` field is required by the type.
+- Account creation, email capture, or telemetry-by-default in the welcome flow.
+- Conflating welcome with options — welcome is one-shot post-install, options is recurring settings.
+
+### Stress-tests before shipping
+
+1. First install — uninstall, `npm run dev`, welcome tab should auto-open.
+2. Reinstall doesn't re-prompt — disable/re-enable, welcome should NOT re-open.
+3. Pre-granted state — grant permissions, close tab, manually open `welcome.html` — steps should render pre-checked.
+4. Live revoke — with welcome tab open, revoke a host permission in `chrome://extensions` — step should flip back within a second.
+5. Dark mode — page rerenders with correct colors.
+6. `npm run check:cws` still passes.
