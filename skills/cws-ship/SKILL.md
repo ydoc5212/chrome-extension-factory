@@ -406,19 +406,27 @@ If the user can't find the source, point them at the CWS rejection email — it 
 
 **What it means.** CWS requires a public privacy policy URL if your extension touches any user data (including host permissions that could be used to read a page). Missing or inadequate policy = Purple Lithium.
 
-**Response to user.**
+**Default response: invoke the auto-host script.** The factory automates this end-to-end. Run:
 
-> Your submission was rejected for **privacy policy missing / inadequate (Purple Lithium)**. You need a publicly-accessible privacy policy URL. Two steps:
->
-> 1. **Host a policy.** The factory ships a template at `docs/templates/privacy-policy.md`. Customize it (replace `<Your Extension Name>`, `<your contact email>`, the data-handling description). Host it somewhere public — GitHub Pages is easiest; point a repo at `docs/` and enable Pages.
-> 2. **Wire it into three places.** Once hosted:
->    - `entrypoints/welcome/config.ts` → `links.privacy`.
->    - The CWS dashboard → **Privacy tab → Privacy policy URL** field.
->    - The CWS dashboard → **Privacy tab → Data usage** checkboxes and Limited Use certification (both mandatory as of Jan 2025; easy to forget).
->
-> Once the policy URL is live and the dashboard is filled, re-submit. Want me to help draft the privacy policy content? (Tell me what data the extension actually touches and I'll fill in the template.)
+```bash
+npm run setup:privacy
+```
 
-**Validator cross-reference.** `ship-ready-welcome-config` fires if `links.privacy` in `entrypoints/welcome/config.ts` is still a factory placeholder. If Recipe R2 fires from CWS but the validator was green, your `welcome/config.ts` has a URL but that URL isn't actually hosting a policy (404, or content doesn't meet CWS standards). Check both.
+This generates `store/PRIVACY.md` and `store/index.html` from the manifest's declared permissions, enables GitHub Pages on the repo via the `gh` CLI (source: `main` branch, `/store` path), polls until the URL serves 200, and writes the URL into `entrypoints/welcome/config.ts → links.privacy`. After it succeeds, push the new `store/` files and the welcome config diff:
+
+```bash
+git add store/ entrypoints/welcome/config.ts && git commit -m "chore: privacy policy" && git push
+```
+
+Then update the CWS dashboard:
+- **Privacy tab → Privacy policy URL** field — paste the URL from the script.
+- **Privacy tab → Data usage** checkboxes and **Limited Use certification** — both mandatory as of Jan 2025; the script can't fill these because the CWS API doesn't expose them. Open the dashboard and check the relevant boxes (the generated `store/PRIVACY.md` is the authoritative source for what to disclose).
+
+**Self-host escape hatch.** If the user wants to host elsewhere (their own domain, Notion page, whatever), pass `--self-host=<url>` to the same script. It writes `store/PRIVACY.md` (so they have a customizable source) and points `links.privacy` at their URL.
+
+**Validator cross-reference.** Two rules collaborate here:
+- `ship-ready-welcome-config` fires while `links.privacy` is still a factory placeholder (`your-org.example` etc.).
+- `ship-ready-privacy-policy-reachable` (ship-only) HEAD-checks the URL once it's set, and denylists insecure / Google-Docs / raw-GitHub / PDF hosts (the patterns that auto-trip the Purple family). If Recipe R2 fires from CWS but both validators were green, your URL serves 200 but the *content* doesn't meet CWS standards — re-read `store/PRIVACY.md` against the dashboard's data-usage disclosures and check for drift.
 
 ### Recipe R3 — Yellow Zinc (listing fields blank / insufficient)
 

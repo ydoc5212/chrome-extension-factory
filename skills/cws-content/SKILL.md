@@ -400,7 +400,7 @@ Note: Recipe C already rewrites `steps`. If Recipe C ran first, the `steps` arra
 - `activationSurfaces` is the list of specific URL patterns / surfaces the extension touches. Written in human language, not match patterns. "PRs on github.com" not "`https://github.com/*`". Bullets render verbatim.
 - `links.repo` — real GitHub repo URL. If the user hasn't created one yet, ask them to — shipping without a repo URL looks abandoned. (Don't fabricate `github.com/your-org/your-extension`.)
 - `links.issues` — usually `<repo>/issues`. Offer to auto-derive from `links.repo`.
-- `links.privacy` — URL to the hosted privacy policy. **Do not invent a URL.** If the user hasn't hosted one yet, tell them: "You need to host a privacy policy before shipping. The factory includes a template at `docs/templates/privacy-policy.md`. Host it (GitHub Pages, your own domain, whatever) and come back with the URL." Until they have one, skip the write for `links.privacy` and leave the recipe incomplete — the validator will continue to flag it, which is the correct behavior.
+- `links.privacy` — URL to the hosted privacy policy. **Do not invent a URL, and do not ask the user to host one manually.** The factory ships an automated host path: `npm run setup:privacy`. It generates `store/PRIVACY.md` from the manifest's permissions, enables GitHub Pages on the user's repo via `gh` CLI, polls until the URL is live, and writes the URL into `links.privacy` for you. You should invoke that script as the default. The user only sees a prompt for contact email (defaults to their git config). Use `--self-host=<url>` if the user has their own hosting and wants to skip gh-pages. Use `--data-handling=sends-data` if the extension transmits data (the generator emits an explicit "edit this" section in that case — review-grade defaults are dishonest). Only fall back to "skip the write and leave the rule red" if `setup:privacy` fails for a reason you can't auto-resolve (e.g., repo is private and user won't make it public).
 
 **Interview prompts:**
 
@@ -410,7 +410,7 @@ Q2. "Where does the extension activate? Give me the user-facing surfaces in huma
 
 Q3. "Where's the public repo for this extension?" — get `links.repo`. Derive `links.issues` as `<repo>/issues` unless they specify otherwise.
 
-Q4. "Where's the privacy policy URL?" — if they don't have one, surface the template path and pause.
+Q4. Privacy policy URL — default behavior: **don't ask, run the script.** Invoke `npm run setup:privacy --yes --json` (passing `--contact-email=<addr>` if you have one from earlier in the conversation; otherwise the script defaults to git config). Read the resulting `done` event's `url` field and use that. Only ask the user if (a) they bring up self-hosting unprompted, in which case use `--self-host=<their-url>`, or (b) the script reports `error` with a hint that requires a human decision (e.g., repo is private — make it public or self-host).
 
 **Exact file writes:**
 
@@ -490,13 +490,17 @@ Q2 — activationSurfaces: "Story feed and comments pages on news.ycombinator.co
 
 Q3 — repo: `https://github.com/asha/hn-read-tracker`. Derive issues.
 
-Q4 — privacy. User: "Uh, I haven't set one up."
+Q4 — privacy. Skill does not ask. It runs:
 
-Skill: "You need a hosted privacy policy URL before shipping — CWS requires it. There's a template at `docs/templates/privacy-policy.md` you can adapt and host (GitHub Pages is easiest — point a repo at it). Once you have the URL, invoke me again. For now I'll skip writing `links.privacy` and the validator will keep flagging `ship-ready-welcome-config` until it's filled in."
+```bash
+npm run setup:privacy -- --yes --json
+```
 
-Skill writes everything except `links.privacy`, then tells the user: "Re-running the validator now — expect `ship-ready-welcome-config` to still fire. Fix it by hosting the policy and pasting the URL."
+The script reads the manifest, generates `store/PRIVACY.md` + `store/index.html` from the declared permissions (`storage`, `activeTab`), enables GitHub Pages on `asha/hn-read-tracker` (source: `main` branch, `/store` path), polls until `https://asha.github.io/hn-read-tracker/` returns 200, and writes that URL into `entrypoints/welcome/config.ts → links.privacy`. The skill reads `done.url` from the JSON output and proceeds.
 
-(This is correct behavior. Factory invariant says: don't fabricate plausible content to make the validator green. Let it stay red until the user has a real answer.)
+Skill tells the user: "Generated and hosted privacy policy at `https://asha.github.io/hn-read-tracker/`. Source lives at `store/PRIVACY.md` — edit it any time and re-run `npm run setup:privacy` to update."
+
+(If the repo were private, the script would error out cleanly with a hint to either make it public or pass `--self-host=<url>`. The skill surfaces that hint to the user and waits for their call. Factory invariant still holds: never fabricate a URL.)
 
 ---
 

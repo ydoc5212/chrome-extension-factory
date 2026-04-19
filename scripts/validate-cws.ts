@@ -833,6 +833,89 @@ function shipReadyVideo(_ctx: Context): Finding[] {
   return [];
 }
 
+// Ship-only, async: HEAD-checks `links.privacy` from welcome/config.ts and
+// flags hosts that CWS reviewers reject (Purple Lithium). The factory
+// auto-host path (`scripts/setup-privacy-policy.ts`) writes a clean URL by
+// default — this rule is the safety net for hand-edited URLs and for cases
+// where the auto-host URL went 404 (gh-pages disabled, repo deleted, etc.).
+//
+// Gating:
+//   - Returns [] if welcome/config.ts is absent (welcome stripped).
+//   - Returns [] if `links.privacy` still matches a factory placeholder
+//     (`your-org.example` etc.) — `ship-ready-welcome-config` already covers
+//     that case; firing twice would just be noise.
+//
+// Denylist comes from sources/extracted/2026-04-17_coditude_purple-family-privacy.md
+// recommendations: HTTPS-only, no Google Docs / Drive, no raw GitHub, no PDFs.
+const PRIVACY_URL_DENYLIST: Array<{ pattern: RegExp; reason: string }> = [
+  { pattern: /^http:\/\//i, reason: 'must be HTTPS (insecure transport triggers Purple family)' },
+  { pattern: /docs\.google\.com/i, reason: 'Google Docs URLs are rejected (not a stable hosting surface)' },
+  { pattern: /drive\.google\.com/i, reason: 'Google Drive URLs are rejected (not a stable hosting surface)' },
+  { pattern: /raw\.githubusercontent\.com/i, reason: 'raw GitHub content URLs are rejected (use GitHub Pages instead)' },
+  { pattern: /\.pdf(?:\?|$)/i, reason: 'PDF URLs are rejected (must be a webpage)' },
+];
+
+const PRIVACY_PLACEHOLDER_HOSTS = ['your-org.example', 'your-org', 'your-extension'];
+
+function extractPrivacyUrl(welcomeSrc: string): string | null {
+  const match = welcomeSrc.match(/privacy:\s*(['"`])([^'"`]+)\1/);
+  return match ? match[2] : null;
+}
+
+async function shipReadyPrivacyPolicyReachable(ctx: Context): Promise<Finding[]> {
+  const welcome = ctx.sources.find((s) => s.relPath === 'entrypoints/welcome/config.ts');
+  if (!welcome) return [];
+  const url = extractPrivacyUrl(welcome.content);
+  if (!url) return [];
+  if (PRIVACY_PLACEHOLDER_HOSTS.some((p) => url.includes(p))) return [];
+
+  const findings: Finding[] = [];
+  for (const { pattern, reason } of PRIVACY_URL_DENYLIST) {
+    if (pattern.test(url)) {
+      findings.push({
+        rule: 'ship-ready-privacy-policy-reachable',
+        severity: 'error',
+        message: `links.privacy URL "${url}" is on the denylist: ${reason}`,
+        why: 'CWS reviewers reject privacy policy URLs that are insecure, locked behind Google login, hosted on raw GitHub, or PDF — these surface as Purple-family rejections (Purple Lithium / Nickel / Copper / Magnesium).',
+        source: 'sources/extracted/2026-04-17_coditude_purple-family-privacy.md',
+        fix: `Move the policy to a stable HTTPS webpage. The factory's default flow does this for you: \`npm run setup:privacy\` (writes \`store/PRIVACY.md\` and hosts it on GitHub Pages). Or use --self-host=<your-url> to point at your own hosting.`,
+      });
+    }
+  }
+  if (findings.length > 0) return findings;
+
+  // HEAD check. Aggressive timeout: 5s total. If the URL is slow, we'd
+  // rather warn-skip than block ship checks.
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5_000);
+    const res = await fetch(url, { method: 'HEAD', redirect: 'follow', signal: controller.signal });
+    clearTimeout(timeout);
+    if (!res.ok) {
+      return [
+        {
+          rule: 'ship-ready-privacy-policy-reachable',
+          severity: 'error',
+          message: `links.privacy URL "${url}" returned HTTP ${res.status}`,
+          why: 'A 4xx/5xx privacy policy URL fails CWS review — reviewers click the link and check it loads. This is a Purple Lithium rejection.',
+          source: 'https://developer.chrome.com/docs/webstore/cws-dashboard-privacy',
+          fix: `Verify the URL serves 200. If you used \`npm run setup:privacy\` and pushed to GitHub Pages, allow 1-2 minutes for first deploy. Re-run \`npm run setup:privacy\` to regenerate, or pass --self-host=<url> with your own hosted policy.`,
+        },
+      ];
+    }
+  } catch (err) {
+    // Network unavailable, DNS, abort — surface as warn rather than error so
+    // CI without network doesn't get blocked. Reviewers will hit a real
+    // failure if the URL is genuinely broken; this is best-effort.
+    if (!JSON_MODE) {
+      console.error(
+        `  (note: ship-ready-privacy-policy-reachable HEAD check skipped — ${err instanceof Error ? err.message : String(err)})`,
+      );
+    }
+  }
+  return [];
+}
+
 // ---------- Runner ----------
 
 // Rule functions may be sync OR async. Async rules are used for checks
@@ -863,6 +946,7 @@ const SHIP_ONLY_RULES: RuleFn[] = [
   listingDrift,
   shipReadyScreenshots,
   shipReadyVideo,
+  shipReadyPrivacyPolicyReachable,
 ];
 
 async function main() {

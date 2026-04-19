@@ -205,7 +205,7 @@ Each of these follows the principle above: the deterministic piece lives in a sc
 
 ## Known limitations / deferred
 
-- **Privacy policy hosting.** Users need a publicly-accessible privacy policy URL. The factory provides a template but does not publish it. Auto-publishing via GitHub Pages is possible but out of scope; users host their own.
+- ~~**Privacy policy hosting.**~~ **Done.** `npm run setup:privacy` (script: `scripts/setup-privacy-policy.ts`) generates `store/PRIVACY.md` and `store/index.html` from the manifest's permissions, enables GitHub Pages via the `gh` CLI on the `main` branch / `/store` path, polls until the URL serves 200, and writes the URL into `entrypoints/welcome/config.ts → links.privacy`. Self-host escape hatch: `--self-host=<url>` skips the gh-pages dance. Validator rule `ship-ready-privacy-policy-reachable` HEAD-checks the URL and denylists insecure / Google-Docs / raw-GitHub / PDF hosts (Purple-family triggers).
 - **Draft vs. live listing state.** CWS distinguishes draft from published listing changes. `listing-drift` will need to read draft state to avoid false positives on in-progress listing edits.
 - **Updates workflow vs. first submission.** Subsequent versions of a published extension hit different review rules (change-of-functionality re-review, etc.). `cws-ship` skill will need an "update" mode that reads the current published listing and diffs against local.
 - **Cross-browser parallel.** The repo supports Firefox builds (`build:firefox`). AMO (addons.mozilla.org) submission has its own rules and API; a `amo-ship` parallel is possible but deferred. The validator's rules are currently Chrome-specific.

@@ -176,7 +176,7 @@ Sessions 1 and 2 are the two "ground floors." After those, everything else slots
 
 3. Rejection recipes for common cases:
    - Blue Argon (remote code) → point at `remote-code-patterns` validator rule.
-   - Purple Lithium (privacy policy missing) → recipe for hosting a privacy policy.
+   - Purple Lithium (privacy policy missing) → **Done.** Recipe R2 in `cws-ship` invokes `npm run setup:privacy` (auto-generates `store/PRIVACY.md`, hosts on GitHub Pages via `gh` CLI, wires URL into welcome config). Self-host escape hatch via `--self-host=<url>`.
    - Yellow Zinc (listing fields blank) → delegate to cws-content.
    - etc.
 
