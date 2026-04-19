@@ -1,0 +1,52 @@
+name: Bug report
+description: Something isn't working the way it should.
+labels: [bug]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you try, what did you expect, what did you get?
+      placeholder: |
+        Repro:
+        1. …
+        2. …
+
+        Expected: …
+        Actual:   …
+    validations:
+      required: true
+
+  - type: input
+    id: plugin-version
+    attributes:
+      label: Plugin version
+      description: From `.claude-plugin/plugin.json`, or `/plugin list` in Claude Code.
+      placeholder: "0.1.0"
+    validations:
+      required: true
+
+  - type: input
+    id: claude-version
+    attributes:
+      label: Claude Code version
+      description: Output of `claude --version`.
+      placeholder: "claude-code vX.Y.Z"
+    validations:
+      required: true
+
+  - type: input
+    id: install-path
+    attributes:
+      label: How did you install the plugin?
+      description: e.g. "via codyhxyz/codyhxyz-plugins", "from this repo directly", "local --plugin-dir", or "npx create-chrome-extension".
+      placeholder: "/plugin install create-chrome-extension@codyhxyz-plugins"
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs or output
+      description: Paste any error output, hook stderr, or the transcript around the failure. Redact anything sensitive (API keys, OAuth tokens).
+      render: shell

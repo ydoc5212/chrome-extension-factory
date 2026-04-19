@@ -1,0 +1,21 @@
+{
+  "name": "create-chrome-extension",
+  "metadata": {
+    "description": "Single-plugin marketplace for create-chrome-extension."
+  },
+  "owner": {
+    "name": "Cody Hergenroeder",
+    "email": "plugins@codyh.xyz"
+  },
+  "plugins": [
+    {
+      "name": "create-chrome-extension",
+      "description": "Six skills that scaffold a Chrome extension, fill the listing copy, capture screenshots, set up Chrome Web Store OAuth, and orchestrate submission.",
+      "source": "./",
+      "author": {
+        "name": "Cody Hergenroeder",
+        "email": "plugins@codyh.xyz"
+      }
+    }
+  ]
+}
