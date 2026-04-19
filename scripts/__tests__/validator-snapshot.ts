@@ -5,8 +5,8 @@
  * the current factory state (post-build) in both structural and ship modes,
  * and against the escape-hatch state (video/ removed), asserting:
  *
- *   - Structural: 14 rules, 0 errors.
- *   - Ship (default factory): 19 rules, 6 errors, specific rule-id set.
+ *   - Structural: 15 rules, 0 errors.
+ *   - Ship (default factory): 20 rules, 6 errors, specific rule-id set.
  *   - Ship (video/ removed): 5 errors, ship-ready-video absent.
  *
  * Assumes `.output/chrome-mv3/` exists (run `npm run build` first — the npm
@@ -17,7 +17,12 @@
  */
 
 import { execSync } from 'node:child_process';
-import { existsSync, renameSync } from 'node:fs';
+import {
+  existsSync,
+  readFileSync,
+  renameSync,
+  writeFileSync,
+} from 'node:fs';
 import { resolve } from 'node:path';
 import assert from 'node:assert/strict';
 
@@ -47,8 +52,8 @@ function runExpectingError(args: string): any {
 const structural = runExpectingError('--json');
 assert.equal(
   structural.rulesRun,
-  14,
-  `structural rulesRun: expected 14, got ${structural.rulesRun}`,
+  15,
+  `structural rulesRun: expected 15, got ${structural.rulesRun}`,
 );
 assert.equal(
   structural.summary.errors,
@@ -60,15 +65,15 @@ assert.equal(
   'structural',
   `structural mode: expected "structural", got "${structural.mode}"`,
 );
-console.log(`✓ structural: 14 rules, 0 errors`);
+console.log(`✓ structural: 15 rules, 0 errors`);
 
 // ----- Test 2: ship mode (default factory) has expected 6 errors -----
 
 const ship = runExpectingError('--ship --json');
 assert.equal(
   ship.rulesRun,
-  19,
-  `ship rulesRun: expected 19, got ${ship.rulesRun}`,
+  20,
+  `ship rulesRun: expected 20, got ${ship.rulesRun}`,
 );
 assert.equal(
   ship.summary.errors,
@@ -92,7 +97,7 @@ assert.deepEqual(
   EXPECTED_SHIP_RULES,
   `ship rules mismatch:\n  expected ${JSON.stringify(EXPECTED_SHIP_RULES)}\n  got      ${JSON.stringify(actualShipRules)}`,
 );
-console.log(`✓ ship (default): 19 rules, 6 errors, rule-ids match`);
+console.log(`✓ ship (default): 20 rules, 6 errors, rule-ids match`);
 
 // ----- Test 3: ship mode with video/ removed (escape hatch) -----
 
@@ -157,5 +162,51 @@ for (const f of ship.findings) {
   assert.ok(typeof f.fix === 'string', `finding missing fix: ${JSON.stringify(f)}`);
 }
 console.log(`✓ --json envelope shape: schemaVersion=1, all required fields present`);
+
+// ----- Test 5: proxy-host-in-install-perms fires on a proxy host -----
+
+// Positive-fire check: this rule is the MSB regression guard. Patch the built
+// manifest to include a workers.dev host in `host_permissions`, confirm the
+// rule fires as an error, and that it does NOT double-report as a generic
+// `optional-host-suggestion` warn on the same host.
+const manifestPath = resolve(ROOT, '.output', 'chrome-mv3', 'manifest.json');
+const originalManifest = readFileSync(manifestPath, 'utf8');
+const patched = JSON.parse(originalManifest);
+patched.host_permissions = [
+  ...(patched.host_permissions ?? []),
+  'https://msb-proxy.example.workers.dev/*',
+];
+writeFileSync(manifestPath, JSON.stringify(patched, null, 2));
+
+try {
+  const patchedRun = runExpectingError('--json');
+  const proxyFinding = patchedRun.findings.find(
+    (f: any) => f.rule === 'proxy-host-in-install-perms',
+  );
+  assert.ok(
+    proxyFinding,
+    `proxy-host-in-install-perms should fire when workers.dev is in host_permissions`,
+  );
+  assert.equal(
+    proxyFinding.severity,
+    'error',
+    `proxy-host-in-install-perms should be severity=error, got ${proxyFinding.severity}`,
+  );
+  const doubleReport = patchedRun.findings.find(
+    (f: any) =>
+      f.rule === 'optional-host-suggestion' &&
+      f.message.includes('workers.dev'),
+  );
+  assert.equal(
+    doubleReport,
+    undefined,
+    `proxy host should not also appear in optional-host-suggestion (double-report)`,
+  );
+  console.log(
+    `✓ proxy-host-in-install-perms: fires on workers.dev, no double-report`,
+  );
+} finally {
+  writeFileSync(manifestPath, originalManifest);
+}
 
 console.log(`\nAll snapshot assertions passed.`);

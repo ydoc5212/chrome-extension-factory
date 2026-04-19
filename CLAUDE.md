@@ -11,8 +11,8 @@ The canonical design doc is [**ARCHITECTURE.md**](ARCHITECTURE.md) — division 
 | Command | When it runs | What it enforces | Factory state |
 |---|---|---|---|
 | `npm run compile` | manual, CI | TypeScript correctness | ✓ green |
-| `npm run check:cws` | every push to CI | well-formed extension structure (13 rules) | ✓ green |
-| `npm run check:cws:ship` | manual | structural + listing/welcome/screenshots/video content filled in (18 rules; `listing-drift` opt-in on CWS secrets); reads `.factory/ladder-status.json` to gate per-screenshot landings | ✗ red (by design) |
+| `npm run check:cws` | every push to CI | well-formed extension structure (15 rules) | ✓ green |
+| `npm run check:cws:ship` | manual | structural + listing/welcome/screenshots/video content filled in (20 rules; `listing-drift` opt-in on CWS secrets); reads `.factory/ladder-status.json` to gate per-screenshot landings | ✗ red (by design) |
 | `npm run screenshots` | manual | renders 1280×800 CWS shots; each lands on the highest reachable rung of the [fallback ladder](docs/07-fallback-ladders.md) (manual → real-build → concept-card stub) | runs end-to-end always; ladder records landings for `check:cws:ship` |
 | `npm run zip` | manual, to package for CWS upload | **gated on `check:cws:ship`** — no zip is produced until ship checks pass | ✗ refuses to run (by design) |
 

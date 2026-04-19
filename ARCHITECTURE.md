@@ -24,8 +24,8 @@ The user (human or AI) interacts with a small, opinionated set of commands. Each
 | Command | When it runs | What it enforces | Factory state |
 |---|---|---|---|
 | `npm run compile` | manual, CI | TypeScript correctness | ✓ green |
-| `npm run check:cws` | every push to CI | well-formed extension structure (13 rules) | ✓ green |
-| `npm run check:cws:ship` | manual | structural + listing/welcome/screenshots/video content filled in (18 rules; `listing-drift` is opt-in on CWS secrets) | ✗ red (by design) |
+| `npm run check:cws` | every push to CI | well-formed extension structure (15 rules) | ✓ green |
+| `npm run check:cws:ship` | manual | structural + listing/welcome/screenshots/video content filled in (20 rules; `listing-drift` is opt-in on CWS secrets) | ✗ red (by design) |
 | `npm run screenshots` | manual | renders 1280×800 CWS screenshots from `screenshots/config.ts` to `.output/screenshots/`; each shot lands on the highest reachable rung of the [fallback ladder](docs/07-fallback-ladders.md) and the result is recorded in `.factory/ladder-status.json` | runs end-to-end always; surfaces with a built HTML reach rung 1 (real-build); others fall to a watermarked stub that `check:cws:ship` blocks on |
 | `npm run zip` | manual, to package for CWS upload | **gated on `check:cws:ship`** — no zip is produced until ship is green | ✗ refuses (by design) |
 | `npm run version-sync` | manual, inside `ship` | local `package.json` version > live CWS version | ✓ skips cleanly without CWS secrets |
@@ -212,6 +212,15 @@ Each of these follows the principle above: the deterministic piece lives in a sc
 - **CWS rollback.** CWS has limited rollback. If a bad version ships, the remedy is to submit an emergency patch. No automation here; the skill should warn when shipping and surface a clear rollback recipe if review fails post-publish.
 - **Trademark / spam pre-checks for names and descriptions.** Currently judgment-level (skill responsibility). Could be scripted against a blocklist but likely low value.
 - **Smoke tests of the built extension.** `npm run build` verifies the bundler succeeded; nothing verifies the extension actually runs. Manual QA via `npm run dev` is the only check today. A headless Chrome smoke test is possible but deferred.
+
+- **Downstream guidance — catching bad designs before the validator backstop catches bad code.** The validator is the only *upgradeable* guidance layer: new rules propagate to downstream repos via `npm update`. Scaffolded prose (CLAUDE.md, skill files) freezes at scaffold time. This creates a gap — a user mid-development on a forked factory, thinking through a design, can spend an hour going the wrong direction before the validator fires at build time. The ideal downstream-guidance architecture, sketched and deferred:
+
+  1. **The `create` skill scaffolds `.claude/skills/` into the child repo** — one skill per named gotcha pattern (e.g. `runtime-host-permissions`, `sw-no-top-level-await`, `content-script-no-main-world`). Skill `description` fields are activation gates, so the child-repo model pulls the pattern in *during design conversation*, before wrong code is written. Zero context cost when irrelevant.
+  2. **A per-project `PostToolUse` hook in scaffolded `.claude/settings.json`** runs `check:cws --json` after edits to `wxt.config.ts` / `entrypoints/background.*` / manifest-shape files and pipes findings back to the model. This is the "stop them before the hour is spent" layer — fires on edit, not on commit.
+  3. **Rule-id ↔ skill mapping lives in the finding JSON.** Add an optional `"skill"` field to each finding so the skill loader can auto-activate the relevant skill when a validator error surfaces. The validator teaches the model which skill to use next time.
+  4. **Skills reference the validator rather than replicating its knowledge** — "run `npm run check:cws`, read the fix text, it's authoritative." This keeps the validator as the single upgradeable source of truth; skills stay thin and don't drift.
+
+  **Why deferred:** the validator backstop is load-bearing for both paths (user-engaged-with-create-skill and user-continuing-dev-alone); skills + hook are the "speed up the former path" layer. One MSB-style failure is not enough data to calibrate which patterns deserve a skill; ship the validator-only backstop now, revisit after the second or third real-world regression.
 
 ---
 

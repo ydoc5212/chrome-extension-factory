@@ -60,6 +60,27 @@ const SENSITIVE_PERMS = new Set([
   'webRequestBlocking',
 ]);
 
+// Hostnames almost always indicating a backend the extension author owns
+// (proxy, worker, managed app host), never a site the user is visiting.
+// Presence in install-time `host_permissions` is a design mistake: these
+// are SW-initiated fetches that belong in `optional_host_permissions`,
+// requested from a user gesture. Matched against manifest entries as
+// substrings (so both `https://*.workers.dev/*` and the concrete
+// `https://foo.bar.workers.dev/*` hit).
+const PROXY_HOST_FRAGMENTS = [
+  'workers.dev',
+  'vercel.app',
+  'netlify.app',
+  'fly.dev',
+  'run.app',        // Google Cloud Run
+  'onrender.com',
+  'railway.app',
+  'deno.dev',
+  'replit.app',
+  'fastly.net',
+  'supabase.co',    // PostgREST / functions
+] as const;
+
 // Permissions used via manifest fields, not chrome.<perm>.* calls.
 const DECLARATIVE_PERMS = new Set(['sidePanel']);
 
@@ -512,16 +533,49 @@ function welcomeConfigReadyForSubmission(ctx: Context): Finding[] {
   ];
 }
 
+function isProxyHost(pattern: string): boolean {
+  return PROXY_HOST_FRAGMENTS.some((frag) => pattern.includes(frag));
+}
+
+// Strong signal (error): backend hostnames the author owns have no business
+// in install-time `host_permissions`. Catches the MSB-class regression where
+// a content-script extension adds its own proxy (workers.dev, vercel.app,
+// fly.dev, run.app, etc.) to `host_permissions` to satisfy a background SW
+// fetch — which works, but triggers the "in-depth review" banner and a
+// jarring install-time warning for an origin the user has never heard of.
+// The correct pattern is `optional_host_permissions` requested from a user
+// gesture. See `entrypoints/welcome/App.tsx` for the reference flow.
+function proxyHostInInstallPerms(ctx: Context): Finding[] {
+  const hp: string[] = ctx.manifest.host_permissions ?? [];
+  const proxies = hp.filter(isProxyHost);
+  if (proxies.length === 0) return [];
+  return [
+    {
+      rule: 'proxy-host-in-install-perms',
+      severity: 'error',
+      message: `host_permissions includes proxy/backend origin(s): ${proxies.join(', ')}`,
+      why: 'These hostnames (workers.dev, vercel.app, fly.dev, run.app, etc.) are backends the extension author controls, not sites the user visits. Declaring them in install-time `host_permissions` triggers the CWS "in-depth review" banner and shows the user a permission warning for an origin they don\'t recognize. The correct pattern is `optional_host_permissions` requested from a user gesture — no install-time warning, no extended review.',
+      source:
+        'https://developer.chrome.com/docs/extensions/develop/concepts/network-requests',
+      fix: 'Move these origin(s) from `host_permissions` to `optional_host_permissions` in `wxt.config.ts`, and request access at runtime via `chrome.permissions.request({ origins: [...] })` from a user-gesture handler. See `entrypoints/welcome/App.tsx` for the reference flow.',
+    },
+  ];
+}
+
 function optionalHostSuggestion(ctx: Context): Finding[] {
   const hp: string[] = ctx.manifest.host_permissions ?? [];
   if (hp.length === 0) return [];
   const alreadyFlaggedBroad = hp.some((p) => BROAD_PATTERNS.has(p));
   if (alreadyFlaggedBroad) return [];
+  // Proxy hosts get the louder `proxy-host-in-install-perms` error; don't
+  // double-report them here as a generic warn.
+  const nonProxy = hp.filter((p) => !isProxyHost(p));
+  if (nonProxy.length === 0) return [];
   return [
     {
       rule: 'optional-host-suggestion',
       severity: 'warn',
-      message: `host_permissions declared: ${hp.join(', ')}`,
+      message: `host_permissions declared: ${nonProxy.join(', ')}`,
       why: 'Any declared host access shows as an install-time warning. Runtime requests via `optional_host_permissions` leave the install prompt empty and install faster.',
       source:
         'https://developer.chrome.com/docs/extensions/develop/concepts/permission-warnings',
@@ -852,6 +906,7 @@ const STRUCTURAL_RULES: RuleFn[] = [
   warMatchesBreadth,
   contentScriptMainWorld,
   listingFieldsPresent,
+  proxyHostInInstallPerms,
   optionalHostSuggestion,
   swListenerTopLevel,
   redTitaniumDynamicUrlConcat,
