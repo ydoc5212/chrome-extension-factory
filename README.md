@@ -2,6 +2,12 @@
 
 > A Claude Code plugin that ships your Chrome extension — scaffold, fill the listing, capture screenshots, set up OAuth, and submit to the Chrome Web Store, in one session.
 
+<p>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License"></a>
+  <a href="https://github.com/codyhxyz/create-chrome-extension/releases"><img src="https://img.shields.io/github/v/release/codyhxyz/create-chrome-extension?label=version" alt="Version"></a>
+  <a href="https://claude.com/product/claude-code"><img src="https://img.shields.io/badge/built_for-Claude%20Code-d97706" alt="Built for Claude Code"></a>
+</p>
+
 [WXT](https://wxt.dev) + React 19 + Tailwind v4 + TypeScript. Six skills, one validator, one ship gate.
 
 <p align="center">
