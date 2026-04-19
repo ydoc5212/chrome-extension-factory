@@ -128,4 +128,7 @@ Profiles: content-script-only, popup-based, side-panel app, full hybrid. See [do
 - [Security](docs/04-security.md)
 - [Useful Patterns](docs/05-useful-patterns.md) — utilities, messaging, welcome page pattern
 - [Keepalive Publish](docs/06-keepalive-publish.md)
+- [Fallback Ladders](docs/07-fallback-ladders.md) — how the factory degrades gracefully (currently: screenshots) so it never asks the user when it can produce an honest output
+- [Google Cloud Setup](docs/08-google-cloud-setup.md) — GCP/CWS credential onboarding for opt-in features (`listing-drift`, `npm run ship`)
+- [Asks Log](docs/asks-log.md) — defect log of places the factory had to stop and ask
 - Templates: [Privacy Policy](docs/templates/privacy-policy.md) · [Store Listing](docs/templates/store-listing.md) · [QA Checklist](docs/templates/qa-checklist.md)

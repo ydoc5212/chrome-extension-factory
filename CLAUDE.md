@@ -12,7 +12,8 @@ The canonical design doc is [**ARCHITECTURE.md**](ARCHITECTURE.md) — division 
 |---|---|---|---|
 | `npm run compile` | manual, CI | TypeScript correctness | ✓ green |
 | `npm run check:cws` | every push to CI | well-formed extension structure (13 rules) | ✓ green |
-| `npm run check:cws:ship` | manual | structural + listing/welcome/screenshots/video content filled in (18 rules; `listing-drift` opt-in on CWS secrets) | ✗ red (by design) |
+| `npm run check:cws:ship` | manual | structural + listing/welcome/screenshots/video content filled in (18 rules; `listing-drift` opt-in on CWS secrets); reads `.factory/ladder-status.json` to gate per-screenshot landings | ✗ red (by design) |
+| `npm run screenshots` | manual | renders 1280×800 CWS shots; each lands on the highest reachable rung of the [fallback ladder](docs/07-fallback-ladders.md) (manual → real-build → concept-card stub) | runs end-to-end always; ladder records landings for `check:cws:ship` |
 | `npm run zip` | manual, to package for CWS upload | **gated on `check:cws:ship`** — no zip is produced until ship checks pass | ✗ refuses to run (by design) |
 
 The user can't accidentally ship an un-customized fork: `npm run zip` is the only path to a submittable artifact, and it refuses until ship mode is green. The user never needs to know to "remember to run the validator" — it's wired into the only command that matters.
@@ -24,6 +25,7 @@ The user can't accidentally ship an un-customized fork: `npm run zip` is the onl
 - **Adding a new class of rule that should be auto-enforced?** Add it to `scripts/validate-cws.ts` (see ARCHITECTURE.md → "How to extend"). Prose-only rules only get enforced by vibes.
 - **Scripts handle pattern/presence/policy; the model handles judgment/synthesis/conversation.** See ARCHITECTURE.md → "Division of labor" for the full table.
 - **Rule ids are public API.** Skills key off them. Renames break downstream consumers.
+- **Asking the user is a defect.** Before you stop to ask, check whether a [fallback ladder](docs/07-fallback-ladders.md) could produce an honest output. If you do have to ask, log it in `docs/asks-log.md`.
 
 ## What this is
 A factory for building Chrome extensions at high velocity. Ships every common extension piece (content script, background worker, popup, options, side panel, welcome) so you strip what you don't need per-project.
