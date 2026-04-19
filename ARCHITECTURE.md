@@ -24,8 +24,8 @@ The user (human or AI) interacts with a small, opinionated set of commands. Each
 | Command | When it runs | What it enforces | Factory state |
 |---|---|---|---|
 | `npm run compile` | manual, CI | TypeScript correctness | ✓ green |
-| `npm run check:cws` | every push to CI | well-formed extension structure (13 rules) | ✓ green |
-| `npm run check:cws:ship` | manual | structural + listing/welcome/screenshots/video content filled in (18 rules; `listing-drift` is opt-in on CWS secrets) | ✗ red (by design) |
+| `npm run check:cws` | every push to CI | well-formed extension structure (15 rules, incl. `no-bundled-credentials`) | ✓ green |
+| `npm run check:cws:ship` | manual | structural + listing/welcome/screenshots/video content filled in (20 rules; `listing-drift` is opt-in on CWS secrets) | ✗ red (by design) |
 | `npm run screenshots` | manual | renders 1280×800 CWS screenshots from `screenshots/config.ts` to `.output/screenshots/` | runs, but shots are factory placeholders until config is customized |
 | `npm run zip` | manual, to package for CWS upload | **gated on `check:cws:ship`** — no zip is produced until ship is green | ✗ refuses (by design) |
 | `npm run version-sync` | manual, inside `ship` | local `package.json` version > live CWS version | ✓ skips cleanly without CWS secrets |
@@ -198,6 +198,7 @@ Each of these follows the principle above: the deterministic piece lives in a sc
 | ~~`cws-screens` skill + repo infrastructure~~ | Skill + Script | **Done (Session 4).** Skill at `skills/cws-screens/SKILL.md`; subproject at `screenshots/` (Next.js); validator rule `ship-ready-screenshots`; one-shot command `npm run screenshots`. Distinct from the iOS `app-store-screenshots` skill. |
 | ~~`cws-init` skill~~ | Skill | **Done (Session 5).** Lives at `/skills/cws-init/SKILL.md`. First-run orientation: detects fresh clone, walks profile selection (4 shapes; deletes unused entrypoints on confirm), delegates to `cws-content` for listing copy, optionally delegates to `cws-screens` for screenshots, optionally walks OAuth setup (links to `docs/08-keepalive-publish.md`), confirms `check:cws` green, drops `.cws-init-done` marker. Idempotent — re-invocation presents a sub-recipe menu. |
 | ~~`cws-video` skill (wraps external)~~ | Skill + dependency | **Done (Session 6, default-on).** Skill at `/skills/cws-video/SKILL.md`; declarative config at `/video/config.ts`; validator rule `ship-ready-video` in `SHIP_ONLY_RULES`. Wraps [`heygen-com/hyperframes`](https://github.com/heygen-com/hyperframes) (install: `npx skills add heygen-com/hyperframes`) — hard dep classified Required in `skills/README.md`. Parallel to `cws-screens`: declarative-config → generate → validate-presence, same escape hatch (`rm -rf video/` drops the rule to no-op). Retrofitted into `cws-ship` (ship-ready-video → cws-video) and `cws-init` (Phase E2 delegation). Fresh-clone factory now has 6 ship errors (up from 5). |
+| ~~Credential proxy pattern~~ | Script rule + Subproject | **Done (Session 7).** Validator rule `no-bundled-credentials` in `STRUCTURAL_RULES` (error; scans built bundle for `sk-*` / `AIza*` / `AKIA*` / `xox[baprs]-*` / `gh[pousr]_*` / `sk_live_*`). Ships a Cloudflare Worker scaffold at `proxy/` and a Vercel Edge Function alternative at `proxy/vercel/`, both exposing the same `POST /v1/forward` contract. Extension-side helper at `utils/proxy-client.ts` generates per-install UUIDs into `chrome.storage.local`. Retired `scripts/inject-secrets.ts` and `scripts/build-store-zip.sh` — the old placeholder-replacement pattern bakes keys into the bundle, which is exactly what the new rule catches. `docs/04-security.md` rewritten. Spec: `docs/superpowers/specs/2026-04-19-credential-proxy-pattern-design.md`. |
 
 ---
 

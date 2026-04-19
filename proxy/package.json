@@ -1,0 +1,16 @@
+{
+  "name": "cce-proxy",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Credential proxy for the chrome-extension-factory. Holds third-party API keys server-side; extension talks to this instead of leaking keys in the bundle.",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250401.0",
+    "typescript": "^5.9.3",
+    "wrangler": "^3.114.0"
+  }
+}

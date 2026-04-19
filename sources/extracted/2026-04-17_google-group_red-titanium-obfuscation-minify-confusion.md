@@ -41,7 +41,7 @@ The practical resolution path from the community (Stryder Crown's advice): repla
 
 - **For `docs/09`:** Note that Red Titanium can fire on dynamic URL construction (string concatenation with variables), not only on intentional obfuscation. The fix is to use hardcoded arrays of allowed domains. False positives are acknowledged by Chrome team; One Stop Support appeal is the escalation path.
 - **For the validator (`scripts/validate-cws.ts`):** No static analysis rule is practical here (any legitimate concatenation could be flagged). Document as a human review checklist item: "check for dynamic URL construction patterns that could trigger Red Titanium."
-- **For the template itself:** The `scripts/inject-secrets.ts` pattern replaces `__PLACEHOLDER__` strings at build time with literal values — this results in hardcoded strings in the final bundle, which is the correct pattern to avoid Red Titanium.
+- **For the template itself:** Hardcoded URL arrays are the right pattern to avoid Red Titanium. The factory previously used a build-time `__PLACEHOLDER__` replacement (`scripts/inject-secrets.ts`) that produced literal strings in the bundle — same desirable property for Red Titanium, but a credential-exposure hazard. That script was retired on 2026-04-19 in favor of the proxy pattern (`proxy/`, `utils/proxy-client.ts`); see `docs/04-security.md`. For non-credential URL allowlisting, just hardcode the array directly in source.
 
 ## Provenance
 

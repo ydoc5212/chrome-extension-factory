@@ -1,0 +1,16 @@
+name = "cce-proxy"
+main = "worker.ts"
+compatibility_date = "2026-04-01"
+
+# Per-install rate-limit counters. Create with:
+#   wrangler kv:namespace create RATE_LIMITS
+# Paste the returned id below.
+[[kv_namespaces]]
+binding = "RATE_LIMITS"
+id = "REPLACE_ME_WITH_KV_NAMESPACE_ID"
+
+# Secrets are NOT in this file. Set them with `wrangler secret put`:
+#   wrangler secret put RATE_LIMIT_PER_DAY        # optional, default 50
+#   wrangler secret put UPSTREAM_BASE_OPENAI      # https://api.openai.com
+#   wrangler secret put UPSTREAM_KEY_OPENAI       # sk-...
+# Add UPSTREAM_BASE_<NAME> / UPSTREAM_KEY_<NAME> pairs for each upstream.

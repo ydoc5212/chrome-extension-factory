@@ -41,7 +41,8 @@ A factory for building Chrome extensions at high velocity. Ships every common ex
 - `utils/` — shared utilities (auto-imported by WXT)
 - `components/` — shared React components (auto-imported by WXT)
 - `assets/` — icons, shared CSS
-- `scripts/` — build-time tooling (secret injection, store zip)
+- `scripts/` — build-time tooling (validator, CWS publish, version sync)
+- `proxy/` — credential proxy subproject (Cloudflare Worker; Vercel alternative at `proxy/vercel/`) — extensions route third-party API calls through this instead of bundling keys
 - `docs/` — playbook documentation and templates
 
 ## Commands
@@ -60,8 +61,8 @@ A factory for building Chrome extensions at high velocity. Ships every common ex
 - `utils/observer.ts` — MutationObserver with suppression pattern
 - `utils/messaging.ts` — typed message protocol (add message types to ProtocolMap)
 - `assets/styles/shared.css` — CSS custom properties for content script theming
-- `scripts/inject-secrets.ts` — build-time secret replacement
-- `scripts/validate-cws.ts` — Chrome Web Store best-practice validator (rules documented in `docs/03-cws-best-practices.md`)
+- `scripts/validate-cws.ts` — Chrome Web Store best-practice validator (rules documented in `docs/03-cws-best-practices.md`). Includes `no-bundled-credentials`, which fails on any credential pattern in the built bundle.
+- `utils/proxy-client.ts` — client helper for the credential proxy (see `proxy/README.md`)
 - `entrypoints/welcome/` — post-install welcome page that requests `optional_host_permissions` at runtime (the pattern that avoids the CWS "in-depth review" banner)
 
 ## Extension type profiles
@@ -76,7 +77,7 @@ See `docs/01-extension-type-profiles.md` for detailed checklists.
 ## Conventions
 - Content scripts use vanilla TS (no React) — keep host page overhead minimal
 - Popup/options/sidepanel/welcome use React + Tailwind
-- Secrets use `__PLACEHOLDER__` pattern replaced at build time via `scripts/inject-secrets.ts`
-- Never commit `.secrets.local.json`
+- Never ship third-party API keys in the extension bundle — route via `proxy/` (or `proxy/vercel/`) using `utils/proxy-client.ts`. The `no-bundled-credentials` validator rule is the forcing function.
+- `.secrets.local.json` is for CWS OAuth publish credentials only (server-side script use, never loaded into the bundle). Gitignored.
 - Use `docs/templates/` for CWS submission materials
 - Host access goes in `optional_host_permissions` and is requested at runtime from a user gesture (see `entrypoints/welcome/App.tsx`). Don't add broad patterns to `host_permissions` or `content_scripts.matches` — the validator will catch it anyway.
