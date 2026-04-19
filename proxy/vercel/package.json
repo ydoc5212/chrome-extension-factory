@@ -1,0 +1,18 @@
+{
+  "name": "cce-proxy-vercel",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Vercel Edge Function alternative to proxy/worker.ts. Same /v1/forward contract.",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "@upstash/ratelimit": "^2.0.5",
+    "@upstash/redis": "^1.34.3"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vercel": "^39.0.0"
+  }
+}

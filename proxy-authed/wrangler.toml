@@ -1,0 +1,22 @@
+name = "cce-proxy-authed"
+main = "worker.ts"
+compatibility_date = "2026-04-01"
+
+# Per-user rate-limit counters, keyed on JWT `sub`.
+[[kv_namespaces]]
+binding = "RATE_LIMITS"
+id = "REPLACE_ME_WITH_KV_NAMESPACE_ID"
+
+# Ban list. Write `ban:<sub>` → `"1"` to block a user.
+[[kv_namespaces]]
+binding = "BANNED_SUBS"
+id = "REPLACE_ME_WITH_BANS_KV_ID"
+
+# Secrets set via `wrangler secret put`:
+#   JWKS_URL          https://<tenant>.clerk.accounts.dev/.well-known/jwks.json
+#                     (or your Auth0 / Supabase / Google JWKS URL)
+#   JWT_ISSUER        https://<tenant>.clerk.accounts.dev
+#                     (must match the `iss` claim)
+#   JWT_AUDIENCE      optional; if set, enforced against the `aud` claim
+#   RATE_LIMIT_PER_DAY   optional, default 200
+#   UPSTREAM_BASE_<NAME> / UPSTREAM_KEY_<NAME> pairs (same as proxy/)

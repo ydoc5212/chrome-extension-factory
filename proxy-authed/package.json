@@ -1,0 +1,19 @@
+{
+  "name": "cce-proxy-authed",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Credential proxy (authed variant). Uses JWT verification instead of per-install UUID. Same /v1/forward contract as proxy/.",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail"
+  },
+  "dependencies": {
+    "jose": "^5.9.6"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250401.0",
+    "typescript": "^5.9.3",
+    "wrangler": "^3.114.0"
+  }
+}

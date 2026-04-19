@@ -642,6 +642,74 @@ function redTitaniumDynamicUrlConcat(_ctx: Context): Finding[] {
   return findings;
 }
 
+// Structural (error): scans built JS for credential patterns. Extension
+// bundles are trivially unpacked — anything that reaches the built output is
+// public. Attackers scrape CWS for `sk-*` and friends at scale (TheHackerNews
+// 2025-06 writeup lists Avast/AVG/Watch2Gether/Trust Wallet/Browsec as caught
+// doing this). The correct pattern is a proxy Worker/Edge Function with a
+// per-install UUID and rate limiting; see `docs/04-security.md` and
+// `proxy/README.md`.
+//
+// We scan the built bundle rather than source because (a) the built bundle is
+// what actually ships and (b) that catches keys injected via any mechanism,
+// not just the factory's historical `inject-secrets.ts`. Patterns are picked
+// to be specific enough that a casual string literal doesn't trip them.
+const CREDENTIAL_PATTERNS: Array<[RegExp, string]> = [
+  // OpenAI / Anthropic / misc "sk-" keys. Anthropic's are sk-ant-* which
+  // fall through this general matcher naturally.
+  [/\bsk-(?:ant-)?[A-Za-z0-9_-]{24,}/g, 'OpenAI/Anthropic-style secret key (sk-...)'],
+  // Google API keys. 39 chars, fixed prefix.
+  [/\bAIza[0-9A-Za-z_-]{35}\b/g, 'Google API key (AIza...)'],
+  // Slack tokens.
+  [/\bxox[baprs]-[0-9A-Za-z-]{10,}/g, 'Slack token (xoxb/xoxp/xoxa/xoxr/xoxs-...)'],
+  // GitHub tokens.
+  [/\bgh[pousr]_[A-Za-z0-9]{36}\b/g, 'GitHub token (ghp_/gho_/ghu_/ghs_/ghr_...)'],
+  // AWS access key ids.
+  [/\bAKIA[0-9A-Z]{16}\b/g, 'AWS access key id (AKIA...)'],
+  // Stripe live secret keys (test keys sk_test_* are lower risk; we still
+  // want them out of the bundle but the live prefix is the error-level one).
+  [/\bsk_live_[A-Za-z0-9]{24,}/g, 'Stripe live secret key (sk_live_...)'],
+];
+
+function walkOutput(dir: string): string[] {
+  const out: string[] = [];
+  if (!existsSync(dir)) return out;
+  for (const entry of readdirSync(dir)) {
+    const full = join(dir, entry);
+    if (statSync(full).isDirectory()) {
+      out.push(...walkOutput(full));
+    } else {
+      out.push(full);
+    }
+  }
+  return out;
+}
+
+function noBundledCredentials(_ctx: Context): Finding[] {
+  if (!existsSync(OUTPUT_DIR)) return [];
+  const findings: Finding[] = [];
+  for (const entry of walkOutput(OUTPUT_DIR)) {
+    if (!/\.(js|html|json|css|mjs)$/.test(entry)) continue;
+    const content = readFileSync(entry, 'utf8');
+    for (const [re, label] of CREDENTIAL_PATTERNS) {
+      for (const match of content.matchAll(re)) {
+        const line = lineOf(content, match.index ?? 0);
+        findings.push({
+          rule: 'no-bundled-credentials',
+          severity: 'error',
+          message: `Credential detected in built bundle: ${label}`,
+          why: 'Extension bundles are public. Any credential in `.output/chrome-mv3/` can be extracted by unzipping the .crx. Attackers scrape the Chrome Web Store for `sk-*` and similar strings; leaked keys get billed against your account until you rotate.',
+          source:
+            'https://thehackernews.com/2025/06/popular-chrome-extensions-leak-api-keys.html',
+          fix: 'Move the third-party call through a proxy (Cloudflare Worker or Vercel Edge Function). The extension authenticates with a per-install UUID; the real key lives as a Worker/Function secret on the server. See `proxy/README.md` and `utils/proxy-client.ts`. Then rotate the leaked key — assume it is compromised.',
+          locations: [`${relative(ROOT, entry)}:${line}`],
+        });
+      }
+    }
+  }
+  return findings;
+}
+
 // Ship-only, async: compares the local manifest to the live CWS listing.
 // Opt-in — returns [] cleanly when CWS secrets are not configured, so the
 // factory stays green-on-structural and red-with-exactly-4-errors on ship
@@ -993,6 +1061,7 @@ const STRUCTURAL_RULES: RuleFn[] = [
   optionalHostSuggestion,
   swListenerTopLevel,
   redTitaniumDynamicUrlConcat,
+  noBundledCredentials,
 ];
 
 const SHIP_ONLY_RULES: RuleFn[] = [

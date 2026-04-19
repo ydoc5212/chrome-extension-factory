@@ -25,6 +25,14 @@ screenshots/.next
 screenshots/tsconfig.tsbuildinfo
 .output/screenshots
 
+# Credential proxy (Cloudflare Worker / Vercel Edge Function)
+proxy/node_modules
+proxy/.wrangler
+proxy/vercel/node_modules
+proxy/vercel/.vercel
+proxy-authed/node_modules
+proxy-authed/.wrangler
+
 # Secrets
 .secrets.local.json
 

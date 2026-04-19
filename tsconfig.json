@@ -6,6 +6,8 @@
   },
   "exclude": [
     "./.output",
-    "./screenshots"
+    "./screenshots",
+    "./proxy",
+    "./proxy-authed"
   ]
 }
