@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CWS Credentials Setup Wizard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://rsms.me/inter/inter.css');
+    html { font-family: 'Inter', system-ui, sans-serif; }
+    kbd {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-size: 0.85em;
+    }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      background: #f1f5f9;
+      border-radius: 4px;
+      padding: 1px 4px;
+      font-size: 0.9em;
+    }
+    .step-card { scroll-margin-top: 100px; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900">
+
+<header class="sticky top-0 z-10 bg-white/90 backdrop-blur border-b border-slate-200">
+  <div class="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
+    <h1 class="font-semibold text-lg">Chrome Web Store API — Setup</h1>
+    <div class="flex items-center gap-2 text-sm text-slate-500" id="progress">
+      <span id="progress-label">Step 1 of 5</span>
+      <div class="w-32 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+        <div id="progress-bar" class="h-full bg-emerald-500 transition-all" style="width: 20%"></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-3xl mx-auto px-6 py-10 space-y-6">
+
+  <section class="text-sm text-slate-600 bg-white rounded-lg border border-slate-200 p-5">
+    <p>
+      Publishing to the Chrome Web Store via the API needs 4 credentials and a Google Cloud project. The factory script <code>scripts/bootstrap-gcp.ts</code> automates steps 1–2 (and attempts step 3). Step 4 — creating an OAuth Desktop client — has no public Google API, so you'll click through the console. This page walks you through it with exact buttons and direct links.
+    </p>
+    <p class="mt-3 text-slate-500">
+      Your GCP project ID: <code id="project-id">(not yet set — rerun the skill with --project-id or complete step 1)</code>
+    </p>
+  </section>
+
+  <!-- STEP 1 -->
+  <section id="step-1" class="step-card bg-white rounded-lg border border-slate-200 overflow-hidden">
+    <div class="flex items-start gap-4 p-6">
+      <div class="flex-none w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 font-semibold grid place-items-center">1</div>
+      <div class="flex-1">
+        <div class="flex items-center gap-2">
+          <h2 class="font-semibold text-lg">Create a Google Cloud project</h2>
+          <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">automated</span>
+        </div>
+        <p class="mt-2 text-sm text-slate-600">
+          The factory script created this for you via <code>gcloud projects create</code>. Nothing to click here — this step is listed for reference. If you want to double-check it exists, open the project page.
+        </p>
+        <div class="mt-4 flex gap-2">
+          <a id="project-link" href="#" target="_blank" rel="noopener" class="text-sm px-3 py-1.5 rounded-md bg-slate-100 hover:bg-slate-200 border border-slate-300">View project →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 2 -->
+  <section id="step-2" class="step-card bg-white rounded-lg border border-slate-200 overflow-hidden">
+    <div class="flex items-start gap-4 p-6">
+      <div class="flex-none w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 font-semibold grid place-items-center">2</div>
+      <div class="flex-1">
+        <div class="flex items-center gap-2">
+          <h2 class="font-semibold text-lg">Enable the Chrome Web Store API</h2>
+          <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">automated</span>
+        </div>
+        <p class="mt-2 text-sm text-slate-600">
+          Enabled via <code>gcloud services enable chromewebstore.googleapis.com</code>. Confirmation link below — you should see "API Enabled" with a green check.
+        </p>
+        <div class="mt-4 flex gap-2">
+          <a id="api-link" href="#" target="_blank" rel="noopener" class="text-sm px-3 py-1.5 rounded-md bg-slate-100 hover:bg-slate-200 border border-slate-300">Verify API status →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 3 -->
+  <section id="step-3" class="step-card bg-white rounded-lg border border-slate-200 overflow-hidden">
+    <div class="flex items-start gap-4 p-6">
+      <div class="flex-none w-10 h-10 rounded-full bg-amber-100 text-amber-700 font-semibold grid place-items-center">3</div>
+      <div class="flex-1">
+        <div class="flex items-center gap-2">
+          <h2 class="font-semibold text-lg">Configure OAuth consent screen</h2>
+          <span class="text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">partially automated</span>
+        </div>
+        <p class="mt-2 text-sm text-slate-600">
+          The script tried to create an IAP OAuth brand for you. For <strong>personal</strong> Google accounts (non-Workspace), Google requires you to configure this in the console yourself. For Workspace accounts, it's probably already done — skip to step 4.
+        </p>
+        <details class="mt-3 text-sm text-slate-700">
+          <summary class="cursor-pointer select-none font-medium">Show me the clicks</summary>
+          <ol class="mt-3 ml-5 list-decimal space-y-2 text-slate-600">
+            <li>Open the consent screen (link below).</li>
+            <li>Click <kbd>Get started</kbd>.</li>
+            <li>Enter any app name (e.g. <code>CWS Upload</code>) and your email as support contact.</li>
+            <li>Audience: pick <strong>External</strong> if you're on a personal account, <strong>Internal</strong> if Workspace.</li>
+            <li>Leave scopes empty — the refresh-token tool declares its own.</li>
+            <li>Save. You don't need to "publish" the app; test mode is fine.</li>
+          </ol>
+        </details>
+        <div class="mt-4 flex gap-2">
+          <a id="consent-link" href="#" target="_blank" rel="noopener" class="text-sm px-3 py-1.5 rounded-md bg-slate-100 hover:bg-slate-200 border border-slate-300">Open consent screen →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 4 -->
+  <section id="step-4" class="step-card bg-white rounded-lg border-2 border-slate-900 overflow-hidden shadow-sm">
+    <div class="flex items-start gap-4 p-6">
+      <div class="flex-none w-10 h-10 rounded-full bg-slate-900 text-white font-semibold grid place-items-center">4</div>
+      <div class="flex-1">
+        <div class="flex items-center gap-2 flex-wrap">
+          <h2 class="font-semibold text-lg">Create an OAuth 2.0 Client ID</h2>
+          <span class="text-xs px-2 py-0.5 rounded-full bg-slate-900 text-white">manual — Google provides no API</span>
+        </div>
+        <p class="mt-2 text-sm text-slate-600">
+          This is the step that can't be automated. You'll click through the console and copy two values back to the terminal. Takes about 60 seconds.
+        </p>
+        <ol class="mt-4 ml-5 list-decimal space-y-3 text-sm text-slate-700">
+          <li>
+            Open the Credentials page for your project (button below).
+          </li>
+          <li>
+            Click <kbd>+ Create Credentials</kbd> at the top, then <kbd>OAuth client ID</kbd>.
+          </li>
+          <li>
+            Application type: <strong>Desktop app</strong>. Name it <code>Chrome Webstore Upload</code>.
+          </li>
+          <li>
+            Click <kbd>Create</kbd>. A modal shows your <strong>Client ID</strong> and <strong>Client secret</strong>.
+          </li>
+          <li>
+            Copy both, then paste them into the terminal when prompted.
+          </li>
+        </ol>
+        <div class="mt-4 flex gap-2 flex-wrap">
+          <a id="credentials-link" href="#" target="_blank" rel="noopener" class="text-sm px-3 py-1.5 rounded-md bg-slate-900 text-white hover:bg-slate-800">Open Credentials page →</a>
+          <button id="copy-credentials-url" class="text-sm px-3 py-1.5 rounded-md bg-slate-100 hover:bg-slate-200 border border-slate-300">Copy URL</button>
+        </div>
+        <p class="mt-4 text-xs text-slate-500">
+          Why can't this be automated? The IAP OAuth Admin API was deprecated January 2025 and shut down March 2026. No public replacement exists for creating general-purpose Desktop OAuth clients. See <code>docs/07-google-cloud-setup.md</code> for the full story.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 5 -->
+  <section id="step-5" class="step-card bg-white rounded-lg border border-slate-200 overflow-hidden">
+    <div class="flex items-start gap-4 p-6">
+      <div class="flex-none w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 font-semibold grid place-items-center">5</div>
+      <div class="flex-1">
+        <div class="flex items-center gap-2">
+          <h2 class="font-semibold text-lg">Generate a refresh token</h2>
+          <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">automated</span>
+        </div>
+        <p class="mt-2 text-sm text-slate-600">
+          The skill runs <code>npx chrome-webstore-upload-keys</code> for you. It prompts for the Client ID + Secret from step 4, opens a browser for your consent, and prints a refresh token. The token is saved to <code>.secrets.local.json</code> automatically.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="text-center text-xs text-slate-400 pt-6 pb-12">
+    When all five are green, run <code>npm run check:cws:ship</code> — the <code>listing-drift</code> rule will light up, confirming your credentials can read the live CWS listing.
+  </section>
+</main>
+
+<script>
+  const params = new URLSearchParams(location.search);
+  const projectId = params.get('projectId') || '';
+
+  if (projectId) {
+    document.getElementById('project-id').textContent = projectId;
+    document.getElementById('project-link').href =
+      `https://console.cloud.google.com/home/dashboard?project=${encodeURIComponent(projectId)}`;
+    document.getElementById('api-link').href =
+      `https://console.cloud.google.com/apis/api/chromewebstore.googleapis.com/overview?project=${encodeURIComponent(projectId)}`;
+    document.getElementById('consent-link').href =
+      `https://console.cloud.google.com/auth/overview?project=${encodeURIComponent(projectId)}`;
+    document.getElementById('credentials-link').href =
+      `https://console.cloud.google.com/apis/credentials?project=${encodeURIComponent(projectId)}`;
+  } else {
+    document.getElementById('project-link').href =
+      'https://console.cloud.google.com/home/dashboard';
+    document.getElementById('api-link').href =
+      'https://console.cloud.google.com/apis/library/chromewebstore.googleapis.com';
+    document.getElementById('consent-link').href =
+      'https://console.cloud.google.com/auth/overview';
+    document.getElementById('credentials-link').href =
+      'https://console.cloud.google.com/apis/credentials';
+  }
+
+  document.getElementById('copy-credentials-url').addEventListener('click', async () => {
+    const url = document.getElementById('credentials-link').href;
+    try {
+      await navigator.clipboard.writeText(url);
+      const btn = document.getElementById('copy-credentials-url');
+      const old = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(() => { btn.textContent = old; }, 1500);
+    } catch {}
+  });
+
+  const step = parseInt(params.get('step') || '4', 10);
+  const clamped = Math.min(Math.max(step, 1), 5);
+  document.getElementById('progress-label').textContent = `Step ${clamped} of 5`;
+  document.getElementById('progress-bar').style.width = `${clamped * 20}%`;
+  const target = document.getElementById(`step-${clamped}`);
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+</script>
+
+</body>
+</html>

@@ -386,60 +386,14 @@ Move on to Phase G.
 
 ### If "yes"
 
-Do NOT paste the entire contents of `docs/06-keepalive-publish.md`. That doc is the source of truth; duplicating it here rots. Instead, walk the user through the **stepwise terminal prompts** and point at the doc for the detailed "where do I click?" parts.
+Delegate to the `setup-cws-credentials` skill. That skill owns:
+- The `gcloud` automation (project create, API enable, best-effort OAuth brand)
+- The manual wall (OAuth Desktop Client ID) with computer-use + GUI-wizard fallbacks
+- Refresh token harvesting via `npx chrome-webstore-upload-keys`
+- Persistence to `.secrets.local.json` (gitignored)
+- End-to-end verification via `npm run check:cws:ship --json`
 
-Say:
-
-> Full walkthrough lives at `docs/06-keepalive-publish.md` — open it in another tab. I'll run the terminal side; you'll run the browser side.
->
-> You'll end up with four secrets. Here's what each is and where it comes from:
->
-> | Secret | Source | How to get it |
-> |---|---|---|
-> | `CWS_EXTENSION_ID` | Chrome Web Store dashboard | The 32-char item ID from your listing URL once you've uploaded a draft once. |
-> | `CWS_CLIENT_ID` | Google Cloud Console | Create an OAuth 2.0 client ID (Desktop app type). |
-> | `CWS_CLIENT_SECRET` | Google Cloud Console | Shown with the client ID. |
-> | `CWS_REFRESH_TOKEN` | Generated via `chrome-webstore-upload-keys` | Run the friendly CLI wizard. |
->
-> **Step 1.** If you don't already have a CWS listing (even a draft), create one first at https://chrome.google.com/webstore/devconsole. Pay the $5 one-time dev fee, upload any zip (you'll replace it), save. Grab the item ID from the URL.
->
-> **Step 2.** Enable the Chrome Web Store API in Google Cloud: https://developer.chrome.com/docs/webstore/using-api — follow the "Register your application" section to get `CLIENT_ID` and `CLIENT_SECRET`.
->
-> **Step 3.** Generate a refresh token using the friendlier wizard:
->
-> ```bash
-> npx chrome-webstore-upload-keys
-> ```
->
-> Paste the client id + secret it asks for; it opens a browser, you grant consent, and it prints the refresh token.
->
-> **Step 4.** Export all four as shell env vars (for local testing). Put them in your shell profile (`~/.zshrc` / `~/.bashrc`) or a local `.env` you source manually — **do not commit them**:
->
-> ```bash
-> export CWS_EXTENSION_ID="..."
-> export CWS_CLIENT_ID="..."
-> export CWS_CLIENT_SECRET="..."
-> export CWS_REFRESH_TOKEN="..."
-> ```
->
-> **Step 5.** Verify they're set:
->
-> ```bash
-> echo $CWS_EXTENSION_ID | grep .
-> echo $CWS_CLIENT_ID | grep .
-> echo $CWS_CLIENT_SECRET | grep .
-> echo $CWS_REFRESH_TOKEN | grep .
-> ```
->
-> Each should print a non-empty value. If any is blank, go back to that step.
->
-> **Step 6 (CI only, if you want the keepalive publish workflow to run in GitHub Actions).** Add the same 4 values as repo secrets at GitHub → Settings → Secrets and variables → Actions. The workflow no-ops cleanly if they're absent, so this is purely opt-in.
-
-Once the user confirms `echo $CWS_EXTENSION_ID | grep .` prints something:
-
-> Secrets confirmed. `npm run ship` will now use them to auto-publish. The scripts in `scripts/cws-api.ts`, `scripts/version-sync.ts`, and `scripts/publish-cws.ts` handle the API calls; you never touch OAuth directly.
-
-If the user runs into any "I clicked the wrong button" issues, point them back at `docs/06-keepalive-publish.md` — do not attempt to re-explain the Google Cloud Console dance yourself.
+Invoke it and wait for it to report back. Do NOT re-explain the Google Cloud Console flow here — `setup-cws-credentials` and `docs/07-google-cloud-setup.md` are the source of truth. If the user defers any sub-step (e.g. doesn't have a CWS listing yet), accept that and move on; the skill is safe to re-run to fill in missing pieces.
 
 ---
 

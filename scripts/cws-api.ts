@@ -13,7 +13,8 @@
  * See docs/06-keepalive-publish.md for how to obtain the 4 secrets.
  */
 
-import { createReadStream } from 'node:fs';
+import { createReadStream, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import chromeWebstoreUpload from 'chrome-webstore-upload';
 
 export interface CwsSecrets {
@@ -79,16 +80,37 @@ const ENV_NAME_MAP: Record<keyof CwsSecrets, string> = {
   refreshToken: 'CWS_REFRESH_TOKEN',
 };
 
+const SECRETS_FILE = resolve(process.cwd(), '.secrets.local.json');
+
+function readSecretsFile(): Record<string, unknown> | null {
+  try {
+    const raw = readFileSync(SECRETS_FILE, 'utf8');
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      return parsed as Record<string, unknown>;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 /**
- * Read the 4 CWS secrets from process.env. Returns null if any is missing
- * or empty — callers should treat that as "no-op cleanly, factory is
- * un-configured" (NOT as an error).
+ * Read the 4 CWS secrets. Prefers `.secrets.local.json` (written by the
+ * `setup-cws-credentials` skill), falls back to process.env (used by CI
+ * where secrets are injected as environment variables). Returns null if
+ * any key is missing or empty in both sources — callers should treat that
+ * as "no-op cleanly, factory is un-configured" (NOT as an error).
  */
 export function loadSecrets(): CwsSecrets | null {
+  const file = readSecretsFile();
   const out: Partial<CwsSecrets> = {};
   for (const key of SECRET_NAMES) {
     const envName = ENV_NAME_MAP[key];
-    const value = process.env[envName];
+    const fileValue = file && typeof file[envName] === 'string'
+      ? (file[envName] as string)
+      : undefined;
+    const value = fileValue || process.env[envName];
     if (!value) return null;
     out[key] = value;
   }
