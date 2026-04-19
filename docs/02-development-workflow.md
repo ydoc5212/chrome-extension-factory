@@ -77,12 +77,24 @@ export default defineContentScript({
 
 Pattern format: `scheme://host/path` where `*` is a wildcard. See [Chrome match patterns docs](https://developer.chrome.com/docs/extensions/develop/concepts/match-patterns).
 
-## Loading a Production Build Manually
+## Install flow — two modes, both automatic
 
-If you need to test the production build without submitting to CWS:
+The factory pops a styled Finder window after every build/zip so you never have to hunt for the artifact. The window's background tells you exactly where to drop it.
 
-1. `npm run build`
-2. Go to `chrome://extensions`
-3. Enable "Developer mode" (top-right toggle)
-4. Click "Load unpacked"
-5. Select the `.output/chrome-mv3/` directory
+| Command | Purpose | Finder shows | Drop target |
+|---|---|---|---|
+| `npm run dev` | HMR loop | *(nothing — WXT launches a dev Chrome with the extension already loaded)* | — |
+| `npm run build` | local production test | `chrome-mv3/` folder | `chrome://extensions` (Developer mode on) |
+| `npm run zip` | ship to CWS | `<name>-<ver>-chrome.zip` | CWS devconsole *(auto-opens)* → Package → Upload new package |
+
+### How it works (macOS)
+
+After `wxt build` / `wxt zip` finishes, `scripts/install-window.mjs` stages the artifact into a clean sibling folder (`.output/install/` or `.output/publish/`) so *only* the thing you need to drag is visible, then opens a 700×480 centered Finder window with a custom background image that points at the right URL. Apple killed AppleScript control of `background picture` on some macOS versions for regular folders, but the close-and-reopen `.DS_Store` commit pattern still works as of macOS 26.
+
+### Fallbacks if drag-and-drop doesn't work
+
+Click whichever "Choose file" / "Load unpacked" button and paste the absolute path (printed in the terminal) into the file picker:
+
+- **macOS**: press **⌘⇧G** → paste → Enter → Select. Or toggle hidden files with **⌘⇧.**
+- **Windows**: click the address bar at the top, paste, Enter
+- **Linux**: press **Ctrl+L**, paste, Enter. Toggle hidden files with **Ctrl+H**

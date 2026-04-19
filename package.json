@@ -8,11 +8,13 @@
     "packages/*"
   ],
   "scripts": {
+    "predev": "node scripts/print-dev-banner.mjs",
     "dev": "wxt",
+    "predev:firefox": "node scripts/print-dev-banner.mjs",
     "dev:firefox": "wxt -b firefox",
-    "build": "wxt build",
-    "build:firefox": "wxt build -b firefox",
-    "zip": "npm run check:cws:ship && wxt zip",
+    "build": "wxt build && node scripts/install-window.mjs load",
+    "build:firefox": "wxt build -b firefox && node scripts/install-window.mjs load",
+    "zip": "npm run check:cws:ship && wxt zip && node scripts/install-window.mjs upload",
     "zip:firefox": "wxt zip -b firefox",
     "compile": "tsc --noEmit",
     "check:cws": "wxt build && tsx scripts/validate-cws.ts",

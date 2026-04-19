@@ -106,9 +106,9 @@ Profiles: content-script-only, popup-based, side-panel app, full hybrid. See [do
 
 | Command | Description |
 |---------|-------------|
-| `npm run dev` | Dev server with HMR (opens Chrome) |
-| `npm run build` | Production build to `.output/chrome-mv3/` |
-| `npm run zip` | Build + zip for CWS upload |
+| `npm run dev` | Dev server with HMR (opens Chrome — no "Load unpacked" step needed) |
+| `npm run build` | Production build → pops a styled Finder window with the folder to drag onto `chrome://extensions` |
+| `npm run zip` | Build + zip → pops a styled Finder window with the `.zip` + opens the CWS devconsole to upload into |
 | `npm run compile` | TypeScript type check |
 | `npm run check:cws` | CWS structural check (runs in CI) |
 | `npm run check:cws:ship` | CWS submission-readiness gate (run before `zip`) |
