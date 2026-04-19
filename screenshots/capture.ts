@@ -48,7 +48,6 @@ import {
   type Rung,
   type LadderEntry,
   type LadderStatus,
-  LADDER_STATUS_RELATIVE_PATH,
 } from './ladder';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -57,7 +56,7 @@ const SCREENSHOTS_DIR = resolve(HERE);
 const OUT_DIR = join(REPO_ROOT, '.output', 'screenshots');
 const BUILD_DIR = join(REPO_ROOT, '.output', 'chrome-mv3');
 const MANUAL_DIR = join(SCREENSHOTS_DIR, 'manual');
-const LADDER_STATUS_PATH = join(REPO_ROOT, LADDER_STATUS_RELATIVE_PATH);
+const LADDER_STATUS_PATH = join(REPO_ROOT, '.factory', 'ladder-status.json');
 const NEXT_PORT = 3535;
 const BUILD_PORT = 3636;
 const NEXT_HOST = `http://127.0.0.1:${NEXT_PORT}`;

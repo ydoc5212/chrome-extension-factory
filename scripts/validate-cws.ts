@@ -34,10 +34,6 @@
 import { readFileSync, readdirSync, statSync, existsSync } from 'fs';
 import { join, resolve, relative } from 'path';
 import { loadSecrets, getListing } from './cws-api.js';
-// Type-only import: TS erases at compile time, so no runtime cross-package
-// resolution against the screenshots subproject's CJS package.json. Path
-// constant is duplicated below (one string, low drift risk).
-import type { LadderStatus } from '../screenshots/ladder.ts';
 
 const ROOT = resolve(import.meta.dirname, '..');
 const ARGS = process.argv.slice(2);
@@ -672,8 +668,6 @@ async function listingDrift(ctx: Context): Promise<Finding[]> {
 // rule no-ops — returning [] — so the factory invariant holds for that profile.
 const SCREENSHOTS_CONFIG_PATH = join(ROOT, 'screenshots', 'config.ts');
 const SCREENSHOTS_OUTPUT_DIR = join(ROOT, '.output', 'screenshots');
-// Path mirrors LADDER_STATUS_RELATIVE_PATH in screenshots/ladder.ts. Kept as
-// a literal here to dodge ESM↔CJS interop with the screenshots subproject.
 const LADDER_STATUS_PATH = join(ROOT, '.factory', 'ladder-status.json');
 const SCREENSHOT_PLACEHOLDERS = [
   'Your killer feature here',
@@ -681,10 +675,22 @@ const SCREENSHOT_PLACEHOLDERS = [
   'Replace this copy before shipping',
 ] as const;
 
-function readLadderStatus(): LadderStatus | null {
+// Local view of the JSON shape written by screenshots/capture.ts. The
+// canonical types live in screenshots/ladder.ts; this is just the subset
+// the validator reads. Drift is caught by scripts/__tests__/validator-snapshot.ts.
+interface LadderStatusView {
+  screenshots?: Array<{
+    artifactId: string;
+    landedRung: string;
+    shipAcceptable: boolean;
+    reason: string | null;
+  }>;
+}
+
+function readLadderStatus(): LadderStatusView | null {
   if (!existsSync(LADDER_STATUS_PATH)) return null;
   try {
-    return JSON.parse(readFileSync(LADDER_STATUS_PATH, 'utf8')) as LadderStatus;
+    return JSON.parse(readFileSync(LADDER_STATUS_PATH, 'utf8')) as LadderStatusView;
   } catch {
     return null;
   }

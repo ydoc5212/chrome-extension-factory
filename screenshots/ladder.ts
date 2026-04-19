@@ -1,9 +1,10 @@
 /**
- * Shared types for the screenshot fallback ladder
- * (docs/07-fallback-ladders.md). Imported by:
- *   - screenshots/capture.ts            (writes ladder-status.json)
- *   - screenshots/app/[id]/page.tsx     (renders the rung)
- *   - scripts/validate-cws.ts           (reads ladder-status.json)
+ * Types for the screenshot fallback ladder (docs/07-fallback-ladders.md).
+ * Imported by screenshots/capture.ts (writes the status file) and
+ * screenshots/app/[id]/page.tsx (renders the rung).
+ *
+ * scripts/validate-cws.ts owns its own minimal view of the JSON shape; the
+ * snapshot test catches drift if these and that diverge.
  *
  * Rungs, top to bottom:
  *   - manual       — a hand-captured PNG at `screenshots/manual/<id>.png`
@@ -14,17 +15,9 @@
  *                    Ship-acceptable.
  *   - concept-card — typographic stub with extension name + tagline.
  *                    Diagonal STUB watermark applied. Not ship-acceptable.
- *
- * Status file location is repo-root-relative; both writers and the reader
- * resolve it the same way.
  */
 
 export type Rung = 'manual' | 'real-build' | 'concept-card';
-
-export const SHIP_ACCEPTABLE_RUNGS: ReadonlySet<Rung> = new Set([
-  'manual',
-  'real-build',
-]);
 
 export interface LadderEntry {
   artifactId: string;
@@ -38,5 +31,3 @@ export interface LadderStatus {
   generatedAt: string;
   screenshots: LadderEntry[];
 }
-
-export const LADDER_STATUS_RELATIVE_PATH = '.factory/ladder-status.json';
