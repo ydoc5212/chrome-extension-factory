@@ -6,16 +6,18 @@
  * each `/<id>?rung=...` route, and writes PNGs to `.output/screenshots/<id>.png`
  * at exactly 1280×800.
  *
- * For each shot, the ladder is:
- *   1. real-build   — `.output/chrome-mv3/<surface>.html` exists → render
- *                     it inside the BrowserFrame via iframe. Ship-acceptable.
- *   2. concept-card — fallback. Renders extension name + tagline in a fixed
- *                     typographic card with a diagonal STUB watermark. Not
- *                     ship-acceptable; the watermark makes accidental upload
+ * Per-shot ladder:
+ *   1. manual       — `screenshots/manual/<id>.png` exists → copy it through
+ *                     untouched. Ship-acceptable; the user took responsibility.
+ *   2. real-build   — `.output/chrome-mv3/<surface>.html` exists → render it
+ *                     inside the BrowserFrame via iframe. Ship-acceptable.
+ *   3. concept-card — fallback. Renders extension name + tagline in a fixed
+ *                     typographic card with a diagonal STUB watermark.
+ *                     Not ship-acceptable; watermark makes accidental upload
  *                     visually impossible.
  *
  * The rung that landed for each shot is recorded in `.factory/ladder-status.json`,
- * which `scripts/validate-cws.ts` reads in `--ship` mode to gate the zip.
+ * which `scripts/validate-cws.ts` reads in `--ship` mode.
  *
  * Run via the root-level script:
  *   npm run screenshots
@@ -29,37 +31,37 @@
 import { chromium, type Browser, type Page } from 'playwright';
 import { spawn, type ChildProcess } from 'node:child_process';
 import { createServer, type Server } from 'node:http';
-import { mkdirSync, existsSync, rmSync, readFileSync, writeFileSync, statSync, createReadStream } from 'node:fs';
+import {
+  mkdirSync,
+  existsSync,
+  rmSync,
+  readFileSync,
+  writeFileSync,
+  statSync,
+  createReadStream,
+  copyFileSync,
+} from 'node:fs';
 import { dirname, join, resolve, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { screenshots, type ScreenshotConfig, type ScreenshotSurface } from './config';
+import {
+  type Rung,
+  type LadderEntry,
+  type LadderStatus,
+  LADDER_STATUS_RELATIVE_PATH,
+} from './ladder';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(HERE, '..');
 const SCREENSHOTS_DIR = resolve(HERE);
 const OUT_DIR = join(REPO_ROOT, '.output', 'screenshots');
 const BUILD_DIR = join(REPO_ROOT, '.output', 'chrome-mv3');
-const FACTORY_DIR = join(REPO_ROOT, '.factory');
-const LADDER_STATUS_PATH = join(FACTORY_DIR, 'ladder-status.json');
+const MANUAL_DIR = join(SCREENSHOTS_DIR, 'manual');
+const LADDER_STATUS_PATH = join(REPO_ROOT, LADDER_STATUS_RELATIVE_PATH);
 const NEXT_PORT = 3535;
 const BUILD_PORT = 3636;
 const NEXT_HOST = `http://127.0.0.1:${NEXT_PORT}`;
 const BUILD_HOST = `http://127.0.0.1:${BUILD_PORT}`;
-
-type Rung = 'real-build' | 'concept-card';
-
-interface LadderEntry {
-  artifactId: string;
-  landedRung: Rung;
-  shipAcceptable: boolean;
-  reason: string | null;
-}
-
-interface LadderStatus {
-  schemaVersion: 1;
-  generatedAt: string;
-  screenshots: LadderEntry[];
-}
 
 const MIME: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',
@@ -167,24 +169,31 @@ function loadManifest(): { name: string; description: string } {
   }
 }
 
-/**
- * Decide the rung this shot can reach. content-in-page can never be rung 1
- * because there's no built HTML for content scripts; everything else gets
- * rung 1 if its surface HTML was emitted by WXT.
- */
-function decideRung(surface: ScreenshotSurface): {
+interface RungDecision {
   rung: Rung;
   iframeSrc?: string;
+  manualSrc?: string;
   reason: string | null;
-} {
-  if (surface === 'content-in-page') {
+}
+
+/**
+ * Decide the highest rung this shot can reach without user dialogue.
+ * Manual override wins; then real-build (if WXT emitted matching HTML);
+ * else concept-card stub.
+ */
+function decideRung(shot: ScreenshotConfig): RungDecision {
+  const manualPath = join(MANUAL_DIR, `${shot.id}.png`);
+  if (existsSync(manualPath)) {
+    return { rung: 'manual', manualSrc: manualPath, reason: null };
+  }
+  if (shot.surface === 'content-in-page') {
     return {
       rung: 'concept-card',
       reason:
-        "surface 'content-in-page' has no built HTML — content-script overlays must be hand-captured on a real page",
+        "surface 'content-in-page' has no built HTML — content-script overlays must be hand-captured",
     };
   }
-  const builtFile = `${surface}.html`;
+  const builtFile = `${shot.surface}.html`;
   const builtPath = join(BUILD_DIR, builtFile);
   if (existsSync(builtPath)) {
     return {
@@ -195,7 +204,7 @@ function decideRung(surface: ScreenshotSurface): {
   }
   return {
     rung: 'concept-card',
-    reason: `no built HTML at .output/chrome-mv3/${builtFile} — run \`npm run build\` and confirm the ${surface} entrypoint exists`,
+    reason: `no built HTML at .output/chrome-mv3/${builtFile} — run \`npm run build\` and confirm the ${shot.surface} entrypoint exists`,
   };
 }
 
@@ -207,7 +216,7 @@ function buildShotUrl(
 ): string {
   const params = new URLSearchParams({ rung });
   if (iframeSrc) params.set('iframeSrc', iframeSrc);
-  if (rung !== 'real-build') {
+  if (rung === 'concept-card') {
     params.set('name', manifestInfo.name);
     params.set('tagline', manifestInfo.description);
   }
@@ -219,11 +228,22 @@ async function captureOne(
   shot: ScreenshotConfig,
   manifestInfo: { name: string; description: string },
 ): Promise<LadderEntry> {
-  const decision = decideRung(shot.surface);
+  const decision = decideRung(shot);
+  const outPath = join(OUT_DIR, `${shot.id}.png`);
+
+  if (decision.rung === 'manual' && decision.manualSrc) {
+    copyFileSync(decision.manualSrc, outPath);
+    return {
+      artifactId: shot.id,
+      landedRung: 'manual',
+      shipAcceptable: true,
+      reason: null,
+    };
+  }
+
   const url = buildShotUrl(shot, decision.rung, decision.iframeSrc, manifestInfo);
   await page.goto(url, { waitUntil: 'networkidle' });
   await page.waitForTimeout(150);
-  const outPath = join(OUT_DIR, `${shot.id}.png`);
   await page.screenshot({
     path: outPath,
     clip: { x: 0, y: 0, width: 1280, height: 800 },
@@ -238,7 +258,8 @@ async function captureOne(
 }
 
 function writeLadderStatus(entries: LadderEntry[]): void {
-  if (!existsSync(FACTORY_DIR)) mkdirSync(FACTORY_DIR, { recursive: true });
+  const dir = dirname(LADDER_STATUS_PATH);
+  if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
   const status: LadderStatus = {
     schemaVersion: 1,
     generatedAt: new Date().toISOString(),
@@ -262,7 +283,10 @@ function reportLanding(entries: LadderEntry[]): void {
     console.log(
       `${stubCount} of ${entries.length} screenshot(s) landed on a non-ship-acceptable rung.`,
     );
-    console.log('`npm run check:cws:ship` will block until they reach rung 1 (real-build).');
+    console.log(
+      'To fix: drop a hand-captured PNG at `screenshots/manual/<id>.png` and re-run, or',
+    );
+    console.log('       address the reason printed above so the auto path can reach rung 1.');
   }
 }
 
@@ -282,31 +306,41 @@ async function main() {
     `Rendering ${screenshots.length} screenshot${screenshots.length === 1 ? '' : 's'} → ${OUT_DIR}`,
   );
 
-  const nextServer = startNextServer();
-  const buildServer = startBuildServer();
+  // Only spin up the rendering stack if at least one shot needs the browser.
+  // A fully manually-overridden config skips both servers and Playwright.
+  const needsBrowser = screenshots.some(
+    (s) => decideRung(s).rung !== 'manual',
+  );
+
+  let nextServer: ChildProcess | undefined;
+  let buildServer: Server | undefined;
   let browser: Browser | undefined;
   const entries: LadderEntry[] = [];
   try {
-    await waitForServer(NEXT_HOST);
-    browser = await chromium.launch();
-    const context = await browser.newContext({
-      viewport: { width: 1280, height: 800 },
-      deviceScaleFactor: 1,
-    });
-    const page = await context.newPage();
+    let page: Page | undefined;
+    if (needsBrowser) {
+      nextServer = startNextServer();
+      buildServer = startBuildServer();
+      await waitForServer(NEXT_HOST);
+      browser = await chromium.launch();
+      const context = await browser.newContext({
+        viewport: { width: 1280, height: 800 },
+        deviceScaleFactor: 1,
+      });
+      page = await context.newPage();
+    }
     for (const shot of screenshots) {
-      const entry = await captureOne(page, shot, manifestInfo);
+      const entry = await captureOne(page!, shot, manifestInfo);
       entries.push(entry);
       const badge = entry.shipAcceptable ? '✓' : '⚠';
       console.log(
         `  ${badge} ${shot.id.padEnd(24)} → rung: ${entry.landedRung}`,
       );
     }
-    await context.close();
   } finally {
     if (browser) await browser.close();
-    nextServer.kill('SIGTERM');
-    buildServer.close();
+    nextServer?.kill('SIGTERM');
+    buildServer?.close();
   }
 
   writeLadderStatus(entries);

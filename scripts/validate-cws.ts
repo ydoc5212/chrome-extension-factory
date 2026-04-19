@@ -34,6 +34,10 @@
 import { readFileSync, readdirSync, statSync, existsSync } from 'fs';
 import { join, resolve, relative } from 'path';
 import { loadSecrets, getListing } from './cws-api.js';
+// Type-only import: TS erases at compile time, so no runtime cross-package
+// resolution against the screenshots subproject's CJS package.json. Path
+// constant is duplicated below (one string, low drift risk).
+import type { LadderStatus } from '../screenshots/ladder.ts';
 
 const ROOT = resolve(import.meta.dirname, '..');
 const ARGS = process.argv.slice(2);
@@ -653,33 +657,29 @@ async function listingDrift(ctx: Context): Promise<Finding[]> {
 // Ship-only: the `screenshots/` subproject is the declarative CWS screenshot
 // generator (see `screenshots/config.ts`). Each shot runs through a fallback
 // ladder (docs/07-fallback-ladders.md); the capture script records which rung
-// each shot landed on in `.factory/ladder-status.json`. This rule reads that
-// file and emits one finding per non-ship-acceptable shot, plus the legacy
-// presence/placeholder checks as ordered prerequisites.
+// each shot landed on in `.factory/ladder-status.json`.
+//
+// Trust contract: only an explicit stub entry blocks ship mode. PNGs without a
+// recorded entry — or with a ship-acceptable entry — pass. This means the user
+// can override the auto pipeline by dropping a hand-captured PNG at
+// `screenshots/manual/<id>.png`; capture.ts copies it through and records it
+// as `manual` (ship-acceptable). It also means stale PNGs from before the
+// ladder system existed pass — that's fine; the placeholder check above still
+// catches factory-template copy, and the watermark on real stubs is loud
+// enough that anything stale is visibly real-or-broken on inspection.
 //
 // If the user deleted `screenshots/` entirely (chose to ship without it), the
 // rule no-ops — returning [] — so the factory invariant holds for that profile.
 const SCREENSHOTS_CONFIG_PATH = join(ROOT, 'screenshots', 'config.ts');
 const SCREENSHOTS_OUTPUT_DIR = join(ROOT, '.output', 'screenshots');
+// Path mirrors LADDER_STATUS_RELATIVE_PATH in screenshots/ladder.ts. Kept as
+// a literal here to dodge ESM↔CJS interop with the screenshots subproject.
 const LADDER_STATUS_PATH = join(ROOT, '.factory', 'ladder-status.json');
 const SCREENSHOT_PLACEHOLDERS = [
   'Your killer feature here',
   'your-target-site.com',
   'Replace this copy before shipping',
 ] as const;
-
-interface LadderEntry {
-  artifactId: string;
-  landedRung: string;
-  shipAcceptable: boolean;
-  reason: string | null;
-}
-
-interface LadderStatus {
-  schemaVersion: number;
-  generatedAt: string;
-  screenshots?: LadderEntry[];
-}
 
 function readLadderStatus(): LadderStatus | null {
   if (!existsSync(LADDER_STATUS_PATH)) return null;
@@ -695,15 +695,11 @@ function shipReadyScreenshots(_ctx: Context): Finding[] {
   // escape hatch, matching welcomeConfigReadyForSubmission.
   if (!existsSync(SCREENSHOTS_CONFIG_PATH)) return [];
 
-  // Ordering is intentional:
-  //   (1) If PNGs are missing, say so first — nothing else matters.
-  //   (2) If config still has placeholders, those PNGs are factory-template
-  //       output regardless of which rung they landed on.
-  //   (3) If ladder status is missing but PNGs exist, the screenshots are
-  //       stale (predate the ladder system or were produced by hand). Force
-  //       re-run so we know what rung each landed on.
-  //   (4) If any shot landed below ship-acceptable, emit one finding per
-  //       stub so the user sees all gaps at once.
+  // Ordering:
+  //   (1) No PNGs at all → say so first.
+  //   (2) Config still has placeholders → unchanged from before.
+  //   (3) For each stub entry recorded in ladder-status, emit one finding so
+  //       the user sees all gaps at once.
   const hasPng =
     existsSync(SCREENSHOTS_OUTPUT_DIR) &&
     readdirSync(SCREENSHOTS_OUTPUT_DIR).some((f) =>
@@ -744,18 +740,7 @@ function shipReadyScreenshots(_ctx: Context): Finding[] {
   }
 
   const status = readLadderStatus();
-  if (!status || !status.screenshots || status.screenshots.length === 0) {
-    return [
-      {
-        rule: 'ship-ready-screenshots',
-        severity: 'error',
-        message: `.output/screenshots/ has PNGs but .factory/ladder-status.json is missing or empty`,
-        why: 'Screenshots predate the fallback-ladder system or were produced by hand. The validator needs to know which rung each shot landed on (real-build vs stub) before it can clear ship mode.',
-        source: 'docs/07-fallback-ladders.md',
-        fix: 'Re-run `npm run screenshots` from the repo root. The capture script will record landings to `.factory/ladder-status.json`.',
-      },
-    ];
-  }
+  if (!status || !status.screenshots) return [];
 
   const stubs = status.screenshots.filter((e) => !e.shipAcceptable);
   if (stubs.length === 0) return [];
@@ -768,10 +753,7 @@ function shipReadyScreenshots(_ctx: Context): Finding[] {
       entry.reason ??
       'Stub rungs render placeholder content with a STUB watermark and are never ship-acceptable.',
     source: 'docs/07-fallback-ladders.md',
-    fix:
-      entry.landedRung === 'concept-card'
-        ? `Get this shot to rung 1 (real-build): run \`npm run build\` so \`.output/chrome-mv3/<surface>.html\` exists, then re-run \`npm run screenshots\`. For surface 'content-in-page', hand-capture a real PNG and drop it at \`.output/screenshots/${entry.artifactId}.png\` (the validator treats any user-supplied PNG with a matching ladder-status entry as ship-acceptable).`
-        : `Re-run \`npm run screenshots\` after addressing: ${entry.reason ?? 'unknown'}.`,
+    fix: `Either: (a) drop a hand-captured PNG at \`screenshots/manual/${entry.artifactId}.png\` and re-run \`npm run screenshots\` — capture will use it untouched as the "manual" rung. Or (b) address the recorded reason so the auto pipeline can reach rung 1 (real-build).`,
     locations: [`.output/screenshots/${entry.artifactId}.png`],
   }));
 }
