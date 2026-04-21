@@ -26,6 +26,23 @@ If your extension has a login screen anyway (to save user state, sync across dev
 
    After sign-in, stash the session token in `browser.storage.session` (cleared when Chrome closes — the token should be short-lived anyway).
 
+### Provider JWKS cheatsheet
+
+These are the `JWKS_URL` / `JWT_ISSUER` values for common providers. Replace `<tenant>` / `<project-id>` with yours.
+
+| Provider | `JWKS_URL` | `JWT_ISSUER` |
+|---|---|---|
+| Clerk | `https://<tenant>.clerk.accounts.dev/.well-known/jwks.json` | `https://<tenant>.clerk.accounts.dev` |
+| Auth0 | `https://<tenant>.auth0.com/.well-known/jwks.json` | `https://<tenant>.auth0.com/` |
+| Supabase | `https://<project-ref>.supabase.co/auth/v1/.well-known/jwks.json` | `https://<project-ref>.supabase.co/auth/v1` |
+| Google (Identity Platform / Firebase Auth) | `https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com` | `https://securetoken.google.com/<project-id>` |
+| AWS Cognito | `https://cognito-idp.<region>.amazonaws.com/<user-pool-id>/.well-known/jwks.json` | `https://cognito-idp.<region>.amazonaws.com/<user-pool-id>` |
+| Microsoft Entra ID (Azure AD) | `https://login.microsoftonline.com/<tenant-id>/discovery/v2.0/keys` | `https://login.microsoftonline.com/<tenant-id>/v2.0` |
+| Okta | `https://<tenant>.okta.com/oauth2/default/v1/keys` | `https://<tenant>.okta.com/oauth2/default` |
+| Descope | `https://api.descope.com/<project-id>/.well-known/jwks.json` | `https://api.descope.com/<project-id>` |
+
+Any OIDC-compliant provider works — if yours isn't listed, check for a `/.well-known/openid-configuration` endpoint on your auth domain; it advertises both values as `jwks_uri` and `issuer`.
+
 3. **Deploy this worker** (same rhythm as `proxy/`):
 
    ```bash

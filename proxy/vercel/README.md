@@ -41,7 +41,7 @@ Drop-in alternative to `proxy/` (Cloudflare Worker). Same `POST /v1/forward` con
 - **Cloudflare** if you want the cheapest-possible free tier and don't already have a Vercel footprint. KV is free for this workload.
 - **Vercel** if you're already on Vercel (the factory's `screenshots/` subproject already is) and want one dashboard. Upstash pricing is generous but has a harder free-tier ceiling than Workers KV.
 
-The extension code is identical in both cases — swap the base URL in `utils/proxy-client.ts` and redeploy.
+The extension code is identical in both cases — `utils/proxy-client.ts` reads `VITE_PROXY_URL` from `.env.local`, so point it at whichever proxy you deployed and rebuild the extension.
 
 ## Anti-abuse
 
