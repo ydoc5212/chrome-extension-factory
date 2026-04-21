@@ -24,6 +24,8 @@
 
 - A working WXT extension matching your profile — content-script-only, popup, side panel, or full hybrid
 - Listing copy, 5 screenshots, and a 30-second promo that pass the Chrome Web Store's content rules — encoded as validators in `scripts/validate-cws.ts`, not as vibes
+- An auto-generated privacy policy hosted on GitHub Pages (`npm run setup:privacy`) and wired into the welcome page
+- A deployable credential proxy (`proxy/`, with Cloudflare Workers and Vercel scaffolds; `proxy-authed/` for extensions with user sign-in) so your third-party API keys never land in the shipped bundle — the `no-bundled-credentials` validator rule is the forcing function
 - OAuth credentials wired so `npm run ship` does the build → version-sync → upload → poll for you
 - A `check:cws:ship` gate that refuses to produce a zip until the listing is submission-ready
 
@@ -55,38 +57,42 @@ Gates on `npm run check:cws:ship` → version-syncs against the live listing →
 
 ## Install
 
-### As a Claude Code plugin (recommended)
+**TL;DR:** You need *both* a scaffolded factory repo (the extension's source) *and* the Claude Code plugin (the skills that drive it).
+
+### 1. Scaffold the factory
+
+Either use the CLI:
+
+```bash
+npx create-chrome-extension my-extension
+cd my-extension
+```
+
+Or clone directly:
+
+```bash
+git clone https://github.com/codyhxyz/create-chrome-extension.git my-extension
+cd my-extension
+npm install
+```
+
+### 2. Install the Claude Code plugin (inside your new repo)
 
 ```
 /plugin marketplace add codyhxyz/codyhxyz-plugins
 /plugin install create-chrome-extension@codyhxyz-plugins
 ```
 
-Or install directly from this repo:
+Or install straight from this repo's marketplace:
 
 ```
 /plugin marketplace add codyhxyz/create-chrome-extension
 /plugin install create-chrome-extension@create-chrome-extension
 ```
 
-The six skills (`cce-init`, `cws-content`, `cws-screens`, `cws-ship`, `cws-video`, `setup-cws-credentials`) appear under the `/create-chrome-extension:` namespace. Each one assumes you're running inside a cloned factory repo — see below.
+The six skills (`cce-init`, `cws-content`, `cws-screens`, `cws-ship`, `cws-video`, `setup-cws-credentials`) appear under the `/create-chrome-extension:` namespace and operate on the factory repo you opened in Claude Code.
 
-### Scaffold a new extension via the CLI
-
-```bash
-npx create-chrome-extension my-extension
-cd my-extension
-# Open in Claude Code, run /create-chrome-extension:cce-init
-```
-
-### Or clone the factory manually
-
-```bash
-git clone https://github.com/codyhxyz/create-chrome-extension.git my-extension
-cd my-extension
-npm install
-npm run dev
-```
+**Skipping the plugin?** The factory still ships as a working codebase — `npm run dev`, `npm run build`, `npm run check:cws:ship`, `npm run ship` all work without the plugin. The plugin just automates the conversational pieces (interviews, validator-output → fix recipes).
 
 ## Usage
 
@@ -190,7 +196,12 @@ Profiles: content-script-only, popup-based, side-panel app, full hybrid. See [do
 | `npm run version-sync` | Compare local version to live CWS version (no-ops without CWS secrets) |
 | `npm run ship` | End-to-end publish: `check:cws:ship` → `version-sync` → `wxt zip` → upload & poll |
 | `npm run screenshots` | Render 1280×800 CWS screenshots from `screenshots/config.ts` |
+| `npm run setup:cws` | One-time: provision a GCP project + enable the Chrome Web Store API (driven by `setup-cws-credentials` skill) |
+| `npm run setup:privacy` | Generate + host a privacy policy on GitHub Pages from your manifest's permissions; wires the URL into the welcome config. `--self-host=<url>` to skip gh-pages |
+| `npm run setup:proxy` | Deploy the `proxy/` Cloudflare Worker + write `VITE_PROXY_URL` into `.env.local` |
 | `npm run dev:firefox` | Dev server for Firefox |
+
+All `setup:*` scripts share a `schemaVersion: 1` JSON envelope when run with `--json` — skills parse that envelope to drive conversational recovery.
 
 ## Docs
 

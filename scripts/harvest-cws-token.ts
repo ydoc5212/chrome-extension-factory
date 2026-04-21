@@ -27,12 +27,12 @@
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { createInterface } from 'node:readline/promises';
-import { stdin as input, stdout as output } from 'node:process';
+import { createSetup } from './lib/setup.ts';
 
 const ROOT = resolve(import.meta.dirname, '..');
 const SECRETS_PATH = resolve(ROOT, '.secrets.local.json');
-const JSON_MODE = process.argv.includes('--json');
+
+const s = createSetup();
 
 function readSecrets(): Record<string, string> {
   if (!existsSync(SECRETS_PATH)) return {};
@@ -48,25 +48,14 @@ function writeSecrets(secrets: Record<string, string>): void {
   writeFileSync(SECRETS_PATH, JSON.stringify(secrets, null, 2) + '\n');
 }
 
-function emit(payload: Record<string, unknown>): void {
-  if (JSON_MODE) {
-    console.log(JSON.stringify(payload));
-  } else {
-    const { status, message, ...rest } = payload;
-    const suffix = Object.keys(rest).length
-      ? ' ' + Object.entries(rest).map(([k, v]) => `${k}=${v}`).join(' ')
-      : '';
-    console.log(`[${status}] ${message ?? ''}${suffix}`);
-  }
-}
-
 async function main(): Promise<void> {
   const secrets = readSecrets();
   const clientId = secrets.CWS_CLIENT_ID;
   const clientSecret = secrets.CWS_CLIENT_SECRET;
   if (!clientId || !clientSecret) {
-    emit({
-      status: 'error',
+    s.emit({
+      type: 'preflight',
+      status: 'failed',
       message:
         'CWS_CLIENT_ID and CWS_CLIENT_SECRET must be in .secrets.local.json before harvesting a refresh token',
       hint: 'Run the setup-cws-credentials skill (or create the OAuth Desktop client in the Google Cloud Console first)',
@@ -74,13 +63,11 @@ async function main(): Promise<void> {
     process.exit(2);
   }
 
-  if (JSON_MODE) {
-    emit({
-      status: 'error',
-      message:
-        'Interactive OAuth flow cannot run in --json mode; the skill must invoke `npx chrome-webstore-upload-keys` directly',
-    });
-    process.exit(1);
+  if (s.jsonMode) {
+    s.fail(
+      'harvest',
+      'Interactive OAuth flow cannot run in --json mode; the skill must invoke `npx chrome-webstore-upload-keys` directly',
+    );
   }
 
   console.log('');
@@ -99,35 +86,20 @@ async function main(): Promise<void> {
     stdio: 'inherit',
   });
   if (result.status !== 0) {
-    emit({
-      status: 'error',
-      message: `chrome-webstore-upload-keys exited with code ${result.status}`,
-    });
-    process.exit(1);
+    s.fail('harvest', `chrome-webstore-upload-keys exited with code ${result.status}`);
   }
 
-  const rl = createInterface({ input, output });
-  try {
-    const answer = (await rl.question('Paste the refresh token here: ')).trim();
-    if (!answer) {
-      emit({ status: 'error', message: 'No token provided' });
-      process.exit(1);
-    }
-    secrets.CWS_REFRESH_TOKEN = answer;
-    writeSecrets(secrets);
-    emit({
-      status: 'ok',
-      message: 'Refresh token saved to .secrets.local.json',
-    });
-  } finally {
-    rl.close();
-  }
+  const answer = await s.prompt('Paste the refresh token here:');
+  if (!answer) s.fail('harvest', 'No token provided');
+  secrets.CWS_REFRESH_TOKEN = answer;
+  writeSecrets(secrets);
+  s.emit({
+    type: 'done',
+    status: 'ok',
+    message: 'Refresh token saved to .secrets.local.json',
+  });
 }
 
 main().catch((err) => {
-  emit({
-    status: 'error',
-    message: err instanceof Error ? err.message : String(err),
-  });
-  process.exit(1);
+  s.fail('unknown', err instanceof Error ? err.message : String(err));
 });

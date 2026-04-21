@@ -40,98 +40,23 @@
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve, join } from 'node:path';
-import { spawnSync } from 'node:child_process';
-import { createInterface } from 'node:readline/promises';
-import { stdin as input, stdout as output } from 'node:process';
+import { createSetup } from './lib/setup.ts';
 
 const ROOT = resolve(import.meta.dirname, '..');
 const MANIFEST_PATH = join(ROOT, '.output', 'chrome-mv3', 'manifest.json');
 const STORE_DIR = join(ROOT, 'store');
 const WELCOME_CONFIG_PATH = join(ROOT, 'entrypoints', 'welcome', 'config.ts');
 
-const ARGS = process.argv.slice(2);
-const JSON_MODE = ARGS.includes('--json');
-const SKIP_PROMPTS = ARGS.includes('--yes');
-const FORCE = ARGS.includes('--force');
-const NO_PUBLISH = ARGS.includes('--no-publish');
-const SELF_HOST_URL = ARGS.find((a) => a.startsWith('--self-host='))?.split('=')[1];
-const CONTACT_EMAIL_ARG = ARGS.find((a) => a.startsWith('--contact-email='))?.split('=')[1];
+const s = createSetup();
+const FORCE = s.flag('force');
+const NO_PUBLISH = s.flag('no-publish');
+const SELF_HOST_URL = s.option('self-host');
+const CONTACT_EMAIL_ARG = s.option('contact-email');
 const DATA_HANDLING =
-  (ARGS.find((a) => a.startsWith('--data-handling='))?.split('=')[1] as
-    | 'local-only'
-    | 'sends-data'
-    | undefined) ?? 'local-only';
+  (s.option('data-handling') as 'local-only' | 'sends-data' | undefined) ?? 'local-only';
 
 if (DATA_HANDLING !== 'local-only' && DATA_HANDLING !== 'sends-data') {
-  fail('usage', `--data-handling must be "local-only" or "sends-data"`);
-}
-
-type EventType =
-  | 'preflight'
-  | 'manifest'
-  | 'generate'
-  | 'gh-auth'
-  | 'gh-repo'
-  | 'pages-enable'
-  | 'pages-poll'
-  | 'welcome-config'
-  | 'self-host'
-  | 'done'
-  | 'error';
-
-interface Event {
-  type: EventType;
-  status: 'ok' | 'skipped' | 'failed' | 'created' | 'exists' | 'pending';
-  [key: string]: unknown;
-}
-
-function emit(event: Event): void {
-  if (JSON_MODE) {
-    console.log(JSON.stringify(event));
-    return;
-  }
-  const { type, status, ...rest } = event;
-  const detail = Object.entries(rest)
-    .map(([k, v]) => `${k}=${typeof v === 'string' ? v : JSON.stringify(v)}`)
-    .join(' ');
-  const icon =
-    status === 'ok' || status === 'created' || status === 'exists'
-      ? '✓'
-      : status === 'skipped' || status === 'pending'
-        ? '·'
-        : '✗';
-  console.log(`${icon} [${type}] ${status}${detail ? ' — ' + detail : ''}`);
-}
-
-function fail(step: string, message: string, hint?: string): never {
-  emit({ type: 'error', status: 'failed', step, message, hint });
-  process.exit(1);
-}
-
-function run(
-  cmd: string,
-  args: string[],
-  options: { allowNonZero?: boolean } = {},
-): { stdout: string; stderr: string; code: number } {
-  const result = spawnSync(cmd, args, { encoding: 'utf8' });
-  if (result.error) return { stdout: '', stderr: result.error.message, code: 127 };
-  const code = result.status ?? 1;
-  if (code !== 0 && !options.allowNonZero) {
-    return { stdout: result.stdout ?? '', stderr: result.stderr ?? '', code };
-  }
-  return { stdout: result.stdout ?? '', stderr: result.stderr ?? '', code };
-}
-
-async function prompt(question: string, defaultValue?: string): Promise<string> {
-  if (JSON_MODE || SKIP_PROMPTS) return defaultValue ?? '';
-  const rl = createInterface({ input, output });
-  try {
-    const suffix = defaultValue ? ` [${defaultValue}]` : '';
-    const answer = await rl.question(`${question}${suffix} `);
-    return answer.trim() || defaultValue || '';
-  } finally {
-    rl.close();
-  }
+  s.fail('usage', `--data-handling must be "local-only" or "sends-data"`);
 }
 
 // ---------- Manifest + content generation ----------
@@ -148,7 +73,7 @@ interface Manifest {
 
 function loadManifest(): Manifest {
   if (!existsSync(MANIFEST_PATH)) {
-    fail(
+    s.fail(
       'manifest',
       `Built manifest not found at ${MANIFEST_PATH}`,
       'Run `npm run build` first.',
@@ -345,7 +270,7 @@ function markdownToHtml(md: string): string {
 // ---------- gh CLI helpers ----------
 
 function ghAuthOk(): { account: string } | null {
-  const r = run('gh', ['auth', 'status'], { allowNonZero: true });
+  const r = s.run('gh', ['auth', 'status'], { allowNonZero: true });
   if (r.code !== 0) return null;
   // `gh auth status` writes to stderr. Look for "Logged in to github.com as <user>".
   const match = (r.stderr + r.stdout).match(/Logged in to github\.com (?:account|as) ([^\s]+)/);
@@ -361,7 +286,7 @@ interface RepoInfo {
 }
 
 function ghRepoView(): RepoInfo | null {
-  const r = run(
+  const r = s.run(
     'gh',
     ['repo', 'view', '--json', 'name,owner,defaultBranchRef,visibility,url'],
     { allowNonZero: true },
@@ -379,7 +304,7 @@ function ghRepoView(): RepoInfo | null {
 
 function pagesEnable(repo: RepoInfo): { url: string; created: boolean } {
   // First check if Pages is already enabled.
-  const existing = run(
+  const existing = s.run(
     'gh',
     ['api', `repos/${repo.owner}/${repo.name}/pages`, '-q', '.html_url'],
     { allowNonZero: true },
@@ -392,7 +317,7 @@ function pagesEnable(repo: RepoInfo): { url: string; created: boolean } {
   }
 
   // Not enabled. Create with source = main branch, /store path.
-  const create = run(
+  const create = s.run(
     'gh',
     [
       'api',
@@ -409,7 +334,7 @@ function pagesEnable(repo: RepoInfo): { url: string; created: boolean } {
   if (create.code !== 0) {
     // Common: 422 if Pages is already configured but we missed it; 404 if
     // repo permissions aren't right; 403 on private+free.
-    fail(
+    s.fail(
       'pages-enable',
       `Failed to enable GitHub Pages: ${create.stderr.trim() || create.stdout.trim()}`,
       repo.visibility === 'PRIVATE'
@@ -418,7 +343,7 @@ function pagesEnable(repo: RepoInfo): { url: string; created: boolean } {
     );
   }
   // Re-read to get the canonical URL.
-  const after = run(
+  const after = s.run(
     'gh',
     ['api', `repos/${repo.owner}/${repo.name}/pages`, '-q', '.html_url'],
     { allowNonZero: true },
@@ -438,12 +363,12 @@ async function pollUrl(url: string, opts: { timeoutMs: number; intervalMs: numbe
     } catch {
       // network error, retry
     }
-    if (!JSON_MODE) {
+    if (!s.jsonMode) {
       process.stdout.write(`  poll #${attempt}: not ready yet (${Math.round((Date.now() - start) / 1000)}s)\r`);
     }
     await new Promise((r) => setTimeout(r, opts.intervalMs));
   }
-  if (!JSON_MODE) process.stdout.write('\n');
+  if (!s.jsonMode) process.stdout.write('\n');
   return false;
 }
 
@@ -460,13 +385,13 @@ function writeWelcomeConfigPrivacy(url: string): { changed: boolean; previous: s
   const re = /(privacy:\s*)(['"`])([^'"`]*)\2/;
   const match = src.match(re);
   if (!match) {
-    fail(
+    s.fail(
       'welcome-config',
       `Could not locate \`privacy:\` field in ${WELCOME_CONFIG_PATH}`,
       'The welcome config may have been edited unexpectedly. Add `privacy: \'<url>\'` inside `links` and re-run.',
     );
   }
-  const previous = match[3];
+  const previous = match![3];
   if (previous === url) return { changed: false, previous };
   const next = src.replace(re, `$1$2${url}$2`);
   writeFileSync(WELCOME_CONFIG_PATH, next);
@@ -481,14 +406,14 @@ async function main(): Promise<void> {
   const extensionName =
     manifest.name && manifest.name !== 'My Extension'
       ? manifest.name
-      : await prompt('Extension name (manifest.name is still default):', 'My Extension');
-  emit({ type: 'manifest', status: 'ok', name: extensionName });
+      : await s.prompt('Extension name (manifest.name is still default):', 'My Extension');
+  s.emit({ type: 'manifest', status: 'ok', name: extensionName });
 
   // 2. Contact email.
-  const gitEmail = run('git', ['config', '--get', 'user.email'], { allowNonZero: true }).stdout.trim();
+  const gitEmail = s.run('git', ['config', '--get', 'user.email'], { allowNonZero: true }).stdout.trim();
   const contactEmail =
-    CONTACT_EMAIL_ARG ?? (await prompt('Contact email for privacy questions:', gitEmail || 'you@example.com'));
-  if (!contactEmail) fail('preflight', 'Contact email is required.');
+    CONTACT_EMAIL_ARG ?? (await s.prompt('Contact email for privacy questions:', gitEmail || 'you@example.com'));
+  if (!contactEmail) s.fail('preflight', 'Contact email is required.');
 
   // 3. Generate policy content.
   const inputs: PolicyInputs = {
@@ -513,9 +438,9 @@ async function main(): Promise<void> {
   if (existsSync(mdPath) && !FORCE) {
     const existing = readFileSync(mdPath, 'utf8');
     if (existing !== md) {
-      const proceed = await prompt(`store/PRIVACY.md already exists and differs from generated content. Overwrite? (y/N)`, 'N');
+      const proceed = await s.prompt(`store/PRIVACY.md already exists and differs from generated content. Overwrite? (y/N)`, 'N');
       if (!proceed.toLowerCase().startsWith('y')) {
-        emit({ type: 'generate', status: 'skipped', reason: 'user declined overwrite' });
+        s.emit({ type: 'generate', status: 'skipped', reason: 'user declined overwrite' });
         process.exit(0);
       }
     }
@@ -523,10 +448,10 @@ async function main(): Promise<void> {
   writeFileSync(mdPath, md);
   writeFileSync(htmlPath, html);
   if (!existsSync(nojekyllPath)) writeFileSync(nojekyllPath, '');
-  emit({ type: 'generate', status: 'created', files: ['store/PRIVACY.md', 'store/index.html', 'store/.nojekyll'] });
+  s.emit({ type: 'generate', status: 'created', files: ['store/PRIVACY.md', 'store/index.html', 'store/.nojekyll'] });
 
   if (NO_PUBLISH) {
-    emit({ type: 'done', status: 'ok', mode: 'no-publish', url: null });
+    s.emit({ type: 'done', status: 'ok', mode: 'no-publish', url: null });
     return;
   }
 
@@ -534,17 +459,17 @@ async function main(): Promise<void> {
   let finalUrl: string;
   if (SELF_HOST_URL) {
     finalUrl = SELF_HOST_URL;
-    emit({ type: 'self-host', status: 'ok', url: finalUrl });
+    s.emit({ type: 'self-host', status: 'ok', url: finalUrl });
     const reachable = await pollUrl(finalUrl, { timeoutMs: 10_000, intervalMs: 2_000 });
-    emit({ type: 'pages-poll', status: reachable ? 'ok' : 'failed', url: finalUrl });
-    if (!reachable && !JSON_MODE) {
+    s.emit({ type: 'pages-poll', status: reachable ? 'ok' : 'failed', url: finalUrl });
+    if (!reachable && !s.jsonMode) {
       console.warn(`  warning: ${finalUrl} did not return 200 within 10s. Continuing anyway — the URL may not be live yet.`);
     }
   } else {
     // gh CLI preflight.
-    const which = run('which', ['gh'], { allowNonZero: true });
+    const which = s.run('which', ['gh'], { allowNonZero: true });
     if (which.code !== 0) {
-      fail(
+      s.fail(
         'preflight',
         '`gh` CLI not found on PATH.',
         'Install: `brew install gh` (macOS) or https://cli.github.com/. Or skip with --self-host=<url>.',
@@ -552,23 +477,24 @@ async function main(): Promise<void> {
     }
     const auth = ghAuthOk();
     if (!auth) {
-      fail(
+      s.fail(
         'gh-auth',
         '`gh` is not authenticated.',
         'Run `gh auth login` once, then re-run this script. Or skip with --self-host=<url>.',
       );
     }
-    emit({ type: 'gh-auth', status: 'ok', account: auth.account });
+    s.emit({ type: 'gh-auth', status: 'ok', account: auth!.account });
 
-    const repo = ghRepoView();
-    if (!repo) {
-      fail(
+    const repoInfo = ghRepoView();
+    if (!repoInfo) {
+      s.fail(
         'gh-repo',
         'No GitHub repo found for this directory.',
         'Either `gh repo create` first, or skip with --self-host=<url>.',
       );
     }
-    emit({
+    const repo = repoInfo!;
+    s.emit({
       type: 'gh-repo',
       status: 'ok',
       owner: repo.owner,
@@ -578,7 +504,7 @@ async function main(): Promise<void> {
     });
 
     if (repo.visibility === 'PRIVATE') {
-      emit({
+      s.emit({
         type: 'gh-repo',
         status: 'failed',
         message: 'Free GitHub Pages requires a PUBLIC repo.',
@@ -590,9 +516,9 @@ async function main(): Promise<void> {
     // store/ files must be committed and pushed before Pages can serve them.
     // We leave that to the user — surface a clear next-step instead of doing
     // a silent commit/push (taste: never push code without consent).
-    const status = run('git', ['status', '--porcelain', 'store/'], { allowNonZero: true });
+    const status = s.run('git', ['status', '--porcelain', 'store/'], { allowNonZero: true });
     if (status.stdout.trim()) {
-      emit({
+      s.emit({
         type: 'pages-enable',
         status: 'pending',
         message: 'Generated files in store/ are uncommitted. Commit and push before Pages can serve them.',
@@ -602,7 +528,7 @@ async function main(): Promise<void> {
 
     const pages = pagesEnable(repo);
     finalUrl = pages.url;
-    emit({
+    s.emit({
       type: 'pages-enable',
       status: pages.created ? 'created' : 'exists',
       url: finalUrl,
@@ -610,10 +536,10 @@ async function main(): Promise<void> {
       sourcePath: '/store',
     });
 
-    emit({ type: 'pages-poll', status: 'pending', url: finalUrl, timeoutMs: 90_000 });
+    s.emit({ type: 'pages-poll', status: 'pending', url: finalUrl, timeoutMs: 90_000 });
     const reachable = await pollUrl(finalUrl, { timeoutMs: 90_000, intervalMs: 5_000 });
-    emit({ type: 'pages-poll', status: reachable ? 'ok' : 'failed', url: finalUrl });
-    if (!reachable && !JSON_MODE) {
+    s.emit({ type: 'pages-poll', status: reachable ? 'ok' : 'failed', url: finalUrl });
+    if (!reachable && !s.jsonMode) {
       console.warn(
         `  warning: ${finalUrl} did not return 200 within 90s. GitHub Pages can take a few minutes on first enable. The validator will re-check on next \`npm run check:cws:ship\`.`,
       );
@@ -622,18 +548,18 @@ async function main(): Promise<void> {
 
   // 6. Wire URL into welcome config.
   const wcResult = writeWelcomeConfigPrivacy(finalUrl);
-  emit({
+  s.emit({
     type: 'welcome-config',
     status: wcResult.changed ? 'created' : 'exists',
     url: finalUrl,
     previous: wcResult.previous,
   });
 
-  emit({ type: 'done', status: 'ok', url: finalUrl });
+  s.emit({ type: 'done', status: 'ok', url: finalUrl });
 }
 
 main().catch((err) => {
-  emit({
+  s.emit({
     type: 'error',
     status: 'failed',
     message: err instanceof Error ? err.message : String(err),
