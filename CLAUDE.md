@@ -1,5 +1,19 @@
 # Chrome Extension Factory
 
+<!-- CCE:publishing-directive:begin v1 -->
+@.claude/publishing-directive.md
+
+<!--
+  The directive body lives at `.claude/publishing-directive.md` (imported above).
+  This block is managed by `cce-init` Phase H. Do not hand-edit between the
+  markers — edits get overwritten on the next `/cce-init` run. To change the
+  directive, edit `skills/cce-init/templates/publishing-directive.md`; Phase H
+  re-writes both `.claude/publishing-directive.md` and this marker block from
+  that template. The `claude-md-publishing-directive-present` validator rule
+  (`npm run check:cws`) goes red if this block or the imported file is missing.
+-->
+<!-- CCE:publishing-directive:end -->
+
 ## Design philosophy (read this first)
 
 **Lean on scripts, not on model recall.** This repo encodes its rules as tests that pass or fail. When in doubt, run the script.

@@ -887,6 +887,45 @@ function shipReadyScreenshots(_ctx: Context): Finding[] {
   }));
 }
 
+// Ship-only: marquee (1400×560) + small (440×280) promo tiles. CWS itself
+// does not require them, so this rule is `warn`, not `error` — it does not
+// block `npm run ship`. We still surface it because:
+//   1. Google's Featured-badge automation treats "complete listing page
+//      with images" as a criterion (see docs/03-cws-best-practices.md →
+//      Featured badge). Missing a tile = ineligible. Featured placement
+//      drives most high-discoverability store traffic.
+//   2. Each tile takes under a minute to render via `/cws-screens`, so the
+//      cost-benefit is lopsided — skipping saves ~2 minutes, costs
+//      indefinite discoverability loss.
+//   3. The common wrong takeaway ("marquee only shows if Featured, so
+//      skip") inverts cause and effect. This rule exists to make the
+//      gap visible before submission so Claude sessions don't dismiss it.
+const PROMO_TILES_OUTPUT_DIR = join(ROOT, '.output', 'promo-tiles');
+const PROMO_TILES = [
+  { id: 'small', filename: 'small.png', dimensions: '440×280' },
+  { id: 'marquee', filename: 'marquee.png', dimensions: '1400×560' },
+] as const;
+
+function shipReadyPromoTiles(_ctx: Context): Finding[] {
+  const findings: Finding[] = [];
+  const dirExists = existsSync(PROMO_TILES_OUTPUT_DIR);
+  const present = dirExists ? new Set(readdirSync(PROMO_TILES_OUTPUT_DIR)) : new Set<string>();
+  for (const tile of PROMO_TILES) {
+    if (!present.has(tile.filename)) {
+      findings.push({
+        rule: 'ship-ready-promo-tiles',
+        severity: 'warn',
+        message: `${tile.dimensions} ${tile.id} promo tile is missing (\`.output/promo-tiles/${tile.filename}\`).`,
+        why: 'Google\'s Featured-badge automation checks for a complete listing page with promotional images. Missing tiles disqualify you from Featured placement — the single biggest discoverability lever in the store. CWS itself will not block submission, but skipping the tiles inverts cause and effect ("marquee only shows if Featured" — no, missing it prevents Featured).',
+        source: 'docs/03-cws-best-practices.md#featured-badge-semi-unwritten-criteria',
+        fix: `Invoke \`/cws-screens\` — it renders both promo tiles alongside your screenshots in under two minutes. If you've intentionally decided not to market this extension, you can ignore this warning; it will not block \`npm run ship\`.`,
+        locations: [`.output/promo-tiles/${tile.filename}`],
+      });
+    }
+  }
+  return findings;
+}
+
 // Ship-only: the `video/` subproject is the declarative CWS launch-video
 // generator (see `video/config.ts`). Parallels shipReadyScreenshots exactly.
 // Taste decision: video is on by default — extensions with a promo video
@@ -1076,6 +1115,83 @@ function shipReadyGenericHealth(_ctx: Context): Finding[] {
   ];
 }
 
+// Enforces the "set-it-and-forget-it" publishing directive: repo-root
+// CLAUDE.md must carry the marker block that imports
+// `.claude/publishing-directive.md`, and that file must exist with
+// non-empty content. This is what keeps future Claude sessions from
+// hand-rolling a zip-and-dashboard walkthrough when the user says
+// "publish" / "upload to the store" / etc. — the directive tells them
+// to delegate to `cws-ship` instead. Owned by the `cce-init` skill's
+// Phase H; bumping the marker version there triggers clean replacement
+// of stale blocks on the next `/cce-init` run.
+function claudeMdPublishingDirectivePresent(_ctx: Context): Finding[] {
+  const claudeMdPath = join(ROOT, 'CLAUDE.md');
+  const directivePath = join(ROOT, '.claude', 'publishing-directive.md');
+  const findings: Finding[] = [];
+
+  if (!existsSync(claudeMdPath)) {
+    findings.push({
+      rule: 'claude-md-publishing-directive-present',
+      severity: 'error',
+      message: 'Repo-root CLAUDE.md is missing.',
+      why: 'Without CLAUDE.md + the publishing-directive block, future Claude Code sessions default to hand-rolled zip/dashboard walkthroughs when the user says "publish" — which misses rejection-recipe handling, version-sync, listing-drift detection, and OAuth refresh that `cws-ship` owns.',
+      source: 'skills/cce-init/SKILL.md → Phase H → "Inject the publishing directive"',
+      fix: 'Run `/cce-init` (any Phase H invocation re-injects). Or hand-create CLAUDE.md with the marker block documented in `skills/cce-init/SKILL.md`.',
+    });
+    return findings;
+  }
+
+  const claudeMd = readFileSync(claudeMdPath, 'utf8');
+  const hasBegin = /<!--\s*CCE:publishing-directive:begin\b/.test(claudeMd);
+  const hasEnd = /<!--\s*CCE:publishing-directive:end\s*-->/.test(claudeMd);
+  const importsDirective = /@\.claude\/publishing-directive\.md/.test(claudeMd);
+
+  if (!hasBegin || !hasEnd) {
+    findings.push({
+      rule: 'claude-md-publishing-directive-present',
+      severity: 'error',
+      message: 'CLAUDE.md is missing the `<!-- CCE:publishing-directive:begin ... --> ... <!-- CCE:publishing-directive:end -->` marker block.',
+      why: 'The marker block is the contract future Claude sessions read to know they MUST delegate CWS publishing to the `cws-ship` skill rather than hand-rolling a zip + dashboard walkthrough.',
+      source: 'skills/cce-init/SKILL.md → Phase H',
+      fix: 'Run `/cce-init` — Phase H re-injects the block idempotently. The template source is `skills/cce-init/templates/publishing-directive.md`.',
+    });
+  } else if (!importsDirective) {
+    findings.push({
+      rule: 'claude-md-publishing-directive-present',
+      severity: 'error',
+      message: 'CLAUDE.md marker block does not import `.claude/publishing-directive.md`.',
+      why: 'The directive body lives in `.claude/publishing-directive.md` and CLAUDE.md imports it via `@.claude/publishing-directive.md`. Inlining the body into CLAUDE.md makes it fragile against regeneration by other tools.',
+      source: 'skills/cce-init/SKILL.md → Phase H',
+      fix: 'Run `/cce-init` to rewrite the marker block from the canonical template.',
+    });
+  }
+
+  if (!existsSync(directivePath)) {
+    findings.push({
+      rule: 'claude-md-publishing-directive-present',
+      severity: 'error',
+      message: '.claude/publishing-directive.md is missing.',
+      why: 'CLAUDE.md imports this file; without it the directive contract is broken and future Claude sessions will fall back to manual walkthroughs.',
+      source: 'skills/cce-init/SKILL.md → Phase H',
+      fix: 'Run `/cce-init` — Phase H writes this file byte-for-byte from `skills/cce-init/templates/publishing-directive.md`.',
+    });
+  } else {
+    const body = readFileSync(directivePath, 'utf8');
+    if (body.trim().length < 200) {
+      findings.push({
+        rule: 'claude-md-publishing-directive-present',
+        severity: 'error',
+        message: '.claude/publishing-directive.md is present but suspiciously short.',
+        why: 'The canonical directive is ~3KB with a triggers table, forbidden-behaviors list, and skill-not-installed fallback. A truncated file means Claude will see a weak or malformed contract.',
+        source: 'skills/cce-init/SKILL.md → Phase H',
+        fix: 'Run `/cce-init` to restore from the canonical template.',
+      });
+    }
+  }
+
+  return findings;
+}
+
 // ---------- Runner ----------
 
 // Rule functions may be sync OR async. Async rules are used for checks
@@ -1100,6 +1216,7 @@ const STRUCTURAL_RULES: RuleFn[] = [
   swListenerTopLevel,
   redTitaniumDynamicUrlConcat,
   noBundledCredentials,
+  claudeMdPublishingDirectivePresent,
 ];
 
 const SHIP_ONLY_RULES: RuleFn[] = [
@@ -1107,6 +1224,7 @@ const SHIP_ONLY_RULES: RuleFn[] = [
   welcomeConfigReadyForSubmission,
   listingDrift,
   shipReadyScreenshots,
+  shipReadyPromoTiles,
   shipReadyVideo,
   shipReadyPrivacyPolicyReachable,
   shipReadyGenericHealth,

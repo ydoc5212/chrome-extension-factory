@@ -219,6 +219,8 @@ So "unwritten" is wrong in letter but right in spirit. Your first submission wit
 
 - **(c) Calibration: the Featured badge is automated, not a quality audit.** Documented cases of malicious Featured extensions include Blaze/Safum/Snap VPN (identical clones of the removed-for-malware Nucleus VPN, all currently Featured) and multiple spam-cluster extensions. The actual review criteria appear to be: MV3 manifest, user count, complete listing page with images, privacy-policy checkbox ticked. Don't treat competitors' Featured status as evidence of quality. [Extracted.](../sources/extracted/2026-04-16_palant_01-13-chrome-web-store-is-a-mess.md)
 
+- **(c) "Complete listing page with images" means screenshots AND promo tiles.** The automated Featured check doesn't distinguish CWS-required from CWS-optional assets — it checks that every slot the dashboard exposes (5 screenshots, 440×280 small tile, 1400×560 marquee tile) is filled. **Skipping the marquee because "it only shows if Google features you" inverts cause and effect:** missing the marquee disqualifies you from the Featured automation in the first place. The tiles take under a minute each to render via `/cws-screens`. Ship both by default. Validator rule `ship-ready-promo-tiles` warns (not errors) if either tile is missing — a deliberate nudge because CWS itself won't block you, but your growth will.
+
 ## Miscellaneous folklore
 
 - **(c) New developers / new extensions get scrutinized harder.** Your first 1–3 submissions on a new publisher account are effectively always manual review. [Source.](https://developer.chrome.com/docs/webstore/review-process)

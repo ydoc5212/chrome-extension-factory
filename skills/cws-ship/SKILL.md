@@ -3,12 +3,17 @@ name: cws-ship
 description: Orchestrate the full Chrome Web Store submission flow — gate on ship-mode validator, reconcile version, summarize, submit via `npm run ship`, and interpret the terminal state (live / in-review / rejected / failed / timeout). Delegates content fixes to `cws-content`, screenshot fixes to `cws-screens`, and video fixes to `cws-video` rather than duplicating their recipes. Does NOT implement any deterministic checks itself; it reads `--json` from the existing scripts.
 triggers:
   - "user says `ship it` / `publish` / `submit to the Chrome Web Store`"
-  - "user asks `is this ready to go live`"
-  - "user wants to run `npm run ship` but doesn't know what to fix first"
+  - "user says `upload to the store` / `push to the chrome store` / `release` / `launch`"
+  - "user says `zip for upload` / `package for upload` / `pre-flight` / `prep for CWS`"
+  - "user asks `is this ready to go live` / `ready to submit` / `what's left before we ship`"
+  - "user wants to run `npm run ship` or `npm run zip` but doesn't know what to fix first"
   - "user says `cws-ship` / `/cws-ship`"
   - "user just finished `cws-content` or `cws-screens` and wants to submit"
-  - "user asks about a CWS rejection code (Blue Argon, Purple Lithium, Yellow Zinc, Red Titanium, Grey Titanium, etc.)"
+  - "user asks about a CWS rejection code (Blue Argon, Purple Lithium, Yellow Zinc, Red Titanium, Grey Titanium, Purple Nickel, Yellow Argon, Yellow Lithium)"
   - "user wants to check submission status after a prior ship"
+  - "user pastes a developer-dashboard URL or references `chrome.google.com/webstore/devconsole`"
+  - "user talks about bumping version for a CWS release (`npm version patch`, manifest `version`, `package.json` version)"
+  - "user produces or mentions a `*.zip` artifact and talks about uploading it to the Chrome Web Store"
 invokes:
   - "npm run check:cws:ship -- --json"       # ship-mode validator, JSON envelope
   - "npx tsx scripts/version-sync.ts --json" # version reconciliation, JSON envelope
@@ -236,6 +241,7 @@ Read (don't edit) the relevant files to build the summary:
 - `wxt.config.ts` → `manifest.name`, `manifest.description`, `manifest.permissions`, `manifest.optional_host_permissions`.
 - `package.json` → `version`.
 - `.output/screenshots/` → count of PNGs (should be ≥ 1, ideally 5).
+- `.output/promo-tiles/small.png` and `.output/promo-tiles/marquee.png` → presence (both should exist; a missing tile is a Featured-eligibility red flag, not a submission blocker).
 
 Render:
 
@@ -247,10 +253,23 @@ About to submit:
   Permissions:       <manifest.permissions joined with ", ">
   Host (optional):   <manifest.optional_host_permissions joined with ", ">
   Screenshots:       <N> PNG(s) in .output/screenshots/
+  Promo tiles:       <small ✓ | small ✗>  <marquee ✓ | marquee ✗>
   Listing drift:     <none | flagged — see above>
 
 Confirm with `yes` to run `npm run ship`. Type anything else to stop.
 ```
+
+If either promo tile is `✗`, append a single-line note before the confirm prompt:
+
+```
+  ⚠ Missing promo tile(s). CWS will accept the submission, but Google's Featured-
+    badge automation requires a complete listing with both the 440×280 small
+    and 1400×560 marquee — the single biggest discoverability lever in the store.
+    Do not ship without both unless you've intentionally decided not to market.
+    Fix: invoke `/cws-screens` (Step 7 produces both in under two minutes).
+```
+
+Do not treat a missing tile as grounds to auto-abort. The user may genuinely not want to market this build. But surface the trade-off explicitly — the upstream failure mode is Claude quietly accepting "skip the marquee" as a trivial optimization, not as the growth-blocker it actually is.
 
 Wait for an explicit `yes` (or equivalent). **Do not auto-proceed on silence.**
 
@@ -471,8 +490,8 @@ Then update the CWS dashboard:
 >    - Detailed description (dashboard-only; not in manifest).
 >    - Category.
 >    - Language.
->    - Screenshots (1-5).
->    - Promo tile (optional but recommended).
+>    - Screenshots (1-5) — required.
+>    - **Small promo tile (440×280) and Marquee promo tile (1400×560)** — CWS marks these optional, but Google's Featured-badge automation treats a missing tile as an incomplete listing. Ship both. Invoke `/cws-screens` → Step 7 if you haven't produced them.
 >    - If any are blank, fill and re-submit.
 > 3. **Is there drift between manifest and dashboard?** Let me re-run the ship validator now — if `listing-drift` fires as a warning, we know the manifest and dashboard disagree. (Triggering that check explicitly.)
 

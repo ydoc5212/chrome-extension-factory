@@ -20,6 +20,8 @@ invokes:
 writes:
   - ".cce-init-done"                                   # marker file dropped at Phase H
   - ".gitignore"                                       # add the marker to gitignore (Phase H)
+  - "CLAUDE.md"                                        # inject/refresh publishing-directive marker block (Phase H)
+  - ".claude/publishing-directive.md"                  # canonical directive body, imported by CLAUDE.md (Phase H)
   - "entrypoints/"                                     # delete unused entrypoints during profile selection (Phase C)
   - "entrypoints/*/App.tsx"                            # bespoke UI skeletons in Phase C2
   - "entrypoints/content.ts"                           # bespoke DOM hook in Phase C2
@@ -423,7 +425,48 @@ After fixing, re-run `npm run check:cws` until it's green. Only then continue to
 
 ## Phase H — Finalize
 
-Three things happen here: drop the marker, update `.gitignore`, print the summary.
+Four things happen here: inject the publishing directive into `CLAUDE.md`, drop the marker, update `.gitignore`, print the summary.
+
+### Inject the publishing directive (idempotent)
+
+This is the "set-it-and-forget-it" contract with future Claude Code sessions: whenever the user mentions publish / ship / Chrome Web Store / CWS / store listing / screenshots / launch video / OAuth credentials, the session MUST invoke the matching skill (`cws-ship`, `cws-content`, `cws-screens`, `cws-video`, `setup-cws-credentials`) instead of hand-rolling a zip-and-dashboard walkthrough. Without it, Claude defaults to manual pre-flight checklists and asks the user for guidance — the exact failure mode we are preventing.
+
+**Source of truth.** The canonical directive body lives inside this skill at:
+
+```
+skills/cce-init/templates/publishing-directive.md
+```
+
+Phase H treats that file as authoritative. It does NOT read from the factory's own `CLAUDE.md`, because in a scaffolded child project the factory checkout is gone (the CLI does `rm -rf .git`) — so "read from factory sources" has no meaning. Reading from the skill's own template works everywhere: fresh scaffold, retrofit of a pre-fix scaffold, or one-off invocation on an unrelated repo.
+
+**Algorithm (runs every `cce-init` invocation, including re-runs):**
+
+1. **Load the canonical body.** Read `<skill-dir>/templates/publishing-directive.md` where `<skill-dir>` is the directory containing this `SKILL.md`.
+2. **Write the child project's directive file.** Write the canonical body byte-for-byte to `<repo>/.claude/publishing-directive.md`, creating `.claude/` if needed. Overwrite unconditionally — the template is authoritative.
+3. **Splice the marker block into `<repo>/CLAUDE.md`.** The block is exactly:
+
+   ```
+   <!-- CCE:publishing-directive:begin v1 -->
+   @.claude/publishing-directive.md
+
+   <!--
+     The directive body lives at `.claude/publishing-directive.md` (imported above).
+     This block is managed by `cce-init` Phase H. Do not hand-edit between the
+     markers — edits get overwritten on the next `/cce-init` run.
+   -->
+   <!-- CCE:publishing-directive:end -->
+   ```
+
+   Then:
+   - If `CLAUDE.md` does not exist: create it with the child project's name as an `# H1` heading, a blank line, then the marker block.
+   - If `CLAUDE.md` exists and contains any line starting with `<!-- CCE:publishing-directive:begin` and a later `<!-- CCE:publishing-directive:end -->`: splice out everything from the begin-line through the end-line (inclusive) and replace with the block above. Match on the begin-marker *prefix* (not the exact version suffix) so a stale `v0`/`v1` block is replaced cleanly when the version bumps.
+   - If `CLAUDE.md` exists with no markers: insert the block immediately after the first top-level `#` heading (or at top if none). Leave the rest of the file untouched — no reformatting, no deleting.
+
+4. **Do not** paraphrase or shorten the template body. Do not embed the body inline in `CLAUDE.md`. The `@.claude/publishing-directive.md` import is load-bearing — it survives CLAUDE.md regeneration by other tools far better than an inline block.
+
+5. **Verify.** Run `npm run check:cws`. The `claude-md-publishing-directive-present` rule will be red if either the marker block or `.claude/publishing-directive.md` is missing/corrupt. Green = the injection succeeded.
+
+**Version bumps.** To evolve the directive: edit `skills/cce-init/templates/publishing-directive.md` and bump the marker suffix (`v1` → `v2`) in this skill's splice block above. Phase H's prefix match (`<!-- CCE:publishing-directive:begin`) will replace the older block on the next run. Old scaffolds self-heal on the next `/cce-init`.
 
 ### Drop the marker
 
@@ -598,6 +641,22 @@ Green. Phase G passes.
 
 ### Phase H — finalize
 
+Skill writes `.claude/publishing-directive.md` by copying byte-for-byte from `skills/cce-init/templates/publishing-directive.md`.
+
+Skill splices the marker block into `CLAUDE.md` (idempotent — prefix-matches `<!-- CCE:publishing-directive:begin` so stale versions get replaced cleanly):
+
+```
+<!-- CCE:publishing-directive:begin v1 -->
+@.claude/publishing-directive.md
+
+<!--
+  The directive body lives at `.claude/publishing-directive.md` (imported above).
+  This block is managed by `cce-init` Phase H. Do not hand-edit between the
+  markers — edits get overwritten on the next `/cce-init` run.
+-->
+<!-- CCE:publishing-directive:end -->
+```
+
 Skill writes `.cce-init-done`:
 
 ```
@@ -610,6 +669,8 @@ Skill edits `.gitignore` to add:
 # cce-init marker (local-only; signals init has been run)
 .cce-init-done
 ```
+
+Skill runs `npm run check:cws` to confirm `claude-md-publishing-directive-present` is green.
 
 Skill prints summary:
 
@@ -644,11 +705,13 @@ Modified:
 - `wxt.config.ts` — permissions trimmed, optional_host_permissions removed, minimum_chrome_version removed, name + description filled in.
 - `entrypoints/background.ts` — welcome tab-create block removed, alarms block removed.
 - `.gitignore` — added `.cce-init-done` entry.
+- `CLAUDE.md` — publishing-directive marker block (re-)injected.
 
 Created:
 - `.cce-init-done` — one-line ISO date.
+- `.claude/publishing-directive.md` — canonical CWS-publishing directive (~3KB), imported by CLAUDE.md. Enforced by the `claude-md-publishing-directive-present` validator rule.
 
-This is the end state cce-init is responsible for. `cws-content` owns `wxt.config.ts`'s name/description and (if it still existed) `welcome/config.ts`; `cce-init` owns the profile-strip and the marker.
+This is the end state cce-init is responsible for. `cws-content` owns `wxt.config.ts`'s name/description and (if it still existed) `welcome/config.ts`; `cce-init` owns the profile-strip, the marker, and the publishing directive.
 
 ---
 

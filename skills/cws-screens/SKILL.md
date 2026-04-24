@@ -1,6 +1,6 @@
 ---
 name: cws-screens
-description: Interview the user to fill out Chrome Web Store screenshot config. Picks 5 screenshots (surface + copy per shot), writes to screenshots/config.ts, regenerates PNGs. Distinct from the iOS app-store-screenshots skill.
+description: Interview the user to fill out Chrome Web Store screenshot config. Picks 5 screenshots (surface + copy per shot), writes to screenshots/config.ts, regenerates PNGs. ALSO produces the two promo tiles (440×280 small + 1400×560 marquee) by default, because skipping them disqualifies the extension from Featured-badge placement. Distinct from the iOS app-store-screenshots skill.
 triggers:
   - chrome web store screenshots
   - cws screenshots
@@ -9,20 +9,38 @@ triggers:
   - screenshots for chrome extension
   - generate store screenshots
   - screenshot config
+  - promo tile
+  - promo tiles
+  - marquee tile
+  - marquee promo tile
+  - small promo tile
+  - 1400x560
+  - 440x280
+  - listing images for CWS
+  - featured badge images
 invokes:
   - screenshots/config.ts
   - screenshots/capture.ts
   - npm run screenshots
   - npx tsx scripts/validate-cws.ts --ship --json
+  - "<skill>app-store-screenshots</skill>"   # fallback pipeline for promo-tile dimensions when screenshots/ lacks routes
+writes:
+  - screenshots/config.ts
+  - .output/promo-tiles/small.png            # 440×280 (Step 7)
+  - .output/promo-tiles/marquee.png          # 1400×560 (Step 7)
 ---
 
 # `cws-screens` — Chrome Web Store screenshot generator
 
-You are helping the user produce 5 screenshots for their Chrome Web Store listing.
+You are helping the user produce Chrome Web Store listing imagery: **5 screenshots** (1280×800) AND **2 promo tiles** (440×280 small + 1400×560 marquee). All seven artifacts. Default plan, every session.
 
 Screenshots are 1280×800 PNGs. They are the single biggest conversion asset on the CWS tile — especially the first one, which is the thumbnail in search results. Each screenshot is **one idea**, **one surface**, **one line of copy**.
 
-Your job is to walk the user through picking what those 5 screenshots should be and to write their choices into `screenshots/config.ts`. You do **not** do visual design yourself — the renderer handles that. You elicit intent and translate it to config entries.
+The promo tiles are marketing imagery that goes in the dashboard's Store-listing tab. CWS does not require them, but Google's Featured-badge automation treats them as part of a "complete listing page with images" — so skipping them disqualifies the extension from Featured placement. They take under a minute each to produce and are the single cheapest lever on long-term discoverability.
+
+Your job is to walk the user through picking the 5 screenshots, writing their choices into `screenshots/config.ts`, producing tile imagery that matches, and leaving them with all seven PNGs on disk. You do **not** do visual design yourself — the renderer handles that. You elicit intent and translate it to config entries.
+
+**Do not let the user skip the promo tiles with the phrase "marquee is only shown if Google features me."** That takeaway is wrong and is the most common failure mode of this skill's upstream transcript. Missing the tiles is what prevents featuring in the first place. If the user pushes back, surface `docs/03-cws-best-practices.md` → Featured badge and the `ship-ready-promo-tiles` validator warning, then produce the tiles anyway.
 
 ---
 
@@ -139,12 +157,52 @@ npm run screenshots
 
 from the repo root. This installs deps in `screenshots/` (idempotent), builds the Next.js app, boots it, and captures 5 PNGs to `.output/screenshots/`.
 
-### Step 6 — Report + validate
+### Step 6 — Report + validate (screenshots)
 
 - List the 5 files written.
 - Run `npx tsx scripts/validate-cws.ts --ship --json` and confirm `ship-ready-screenshots` is no longer in `findings`.
 - If the user wants to tweak any shot, edit the relevant entry in `screenshots/config.ts` and re-run `npm run screenshots` — it's idempotent.
-- Note that the user uploads these PNGs manually to the CWS dashboard — there is no API for screenshot upload.
+- `ship-ready-promo-tiles` will still show as a **warning** at this point — that clears in Step 7.
+
+### Step 7 — Promo tiles (default-on; do not skip)
+
+Two tiles, both derived from the same visual language as the hero screenshot:
+
+| Tile | Dimensions | Filename | Role |
+|---|---|---|---|
+| Small | 440×280 | `.output/promo-tiles/small.png` | Shown in CWS category pages, collections, cross-sell strips. |
+| Marquee | 1400×560 | `.output/promo-tiles/marquee.png` | Shown on the homepage, Featured collections, editor's-picks carousels. The "if this were a billboard" asset. |
+
+The hero screenshot's headline + subhead are already strong. Reuse them — don't re-draft copy from scratch. The tile is cropped to **one line** (the headline, or a tightened version of it), the extension's logo, and a clean background.
+
+**Production path.**
+
+1. Read the hero entry from `screenshots/config.ts`. Confirm with the user:
+   > I'll reuse your hero headline — *"Never miss a PR."* — on both promo tiles, with the extension's logo. Want a shorter variant for the tiles, or same copy?
+
+2. If the `screenshots/` Next.js subproject has `promo-tile-small` and `promo-tile-marquee` routes (check `screenshots/app/` directory): run `npm run screenshots` — the existing capture script will render both tiles alongside the screenshots. Done.
+
+3. If those routes do NOT exist yet (many older factory scaffolds): delegate to the `marketing/` sibling via:
+   ```
+   /app-store-screenshots
+   ```
+   Tell the user: "The factory's `screenshots/` pipeline doesn't have tile routes yet — the `marketing/` subproject does arbitrary dimensions. Scaffolding there." After `/app-store-screenshots` produces the two PNGs, copy them into `.output/promo-tiles/` (create the directory):
+   ```bash
+   mkdir -p .output/promo-tiles
+   cp marketing/output/small-440x280.png .output/promo-tiles/small.png
+   cp marketing/output/marquee-1400x560.png .output/promo-tiles/marquee.png
+   ```
+
+4. **Manual fallback.** If neither pipeline is available and the user insists on moving fast: tell them to drop two PNGs at exactly `.output/promo-tiles/small.png` (440×280) and `.output/promo-tiles/marquee.png` (1400×560), produced in any tool they like (Figma export, CleanShot, etc.). The validator only checks presence and filename, not dimensions — but upload will fail on wrong dimensions, so the user must size correctly.
+
+**After Step 7:** re-run the validator. `ship-ready-promo-tiles` should no longer appear in findings (or appear with 0 entries).
+
+### Step 8 — Final report
+
+- List all 7 files written (5 screenshots + 2 tiles).
+- Confirm both `ship-ready-screenshots` (error → clear) and `ship-ready-promo-tiles` (warn → clear) are absent from the latest validator output.
+- Note that the user uploads all seven PNGs manually to the CWS dashboard — there is no API for screenshot or promo-tile upload.
+- Remind: the first screenshot = thumbnail, the marquee = Featured-placement asset. Both matter.
 
 ---
 
@@ -232,4 +290,6 @@ npm run screenshots
 - **Do not offer more or fewer than 5 screenshots** unless the user has a strong reason — CWS caps at 5, and the deck shape above is the reason.
 - **Do not write copy the user didn't pick.** Present 3 candidates, let the user choose. Single-author first-draft copy goes in the trash on review.
 - **Do not try to replicate the iOS `app-store-screenshots` aesthetic** — this is a desktop browser frame, not a phone mockup. The visual language is restrained; decorative blobs and gradient-heavy backgrounds don't belong here.
-- **Do not submit or zip.** That's `cws-ship`. Your job ends at "5 PNGs generated, validator is green for this rule."
+- **Do not submit or zip.** That's `cws-ship`. Your job ends at "5 screenshots + 2 promo tiles generated, validator shows neither `ship-ready-screenshots` nor `ship-ready-promo-tiles`."
+- **Do not deprioritize the promo tiles by saying "marquee only shows when you're Featured."** That inverts cause and effect. Missing the tiles is what disqualifies the extension from Featured automation in the first place. See `docs/03-cws-best-practices.md` → Featured badge. This is the single most common wrong takeaway in upstream transcripts — do not repeat it.
+- **Do not ask the user whether they want promo tiles.** They are default-on. Ask only if they want to customize copy or trust you to reuse the hero screenshot's headline.

@@ -18,15 +18,17 @@ Describe your extension when prompted. The skill generates React components that
 
 ### What to generate
 
-| Asset | Dimensions | Required? |
-|---|---|---|
-| Store screenshot (hero / thumbnail) | 1280x800 | Yes |
-| Additional store screenshots (up to 4 more) | 1280x800 | Optional |
-| Marquee promo tile | 1400x560 | Optional |
-| Small promo tile | 440x280 | Optional |
-| Social launch graphics (Twitter card / OG image) | 1200x628 or 1200x630 | Optional |
+| Asset | Dimensions | CWS-required? | Ship-by-default? |
+|---|---|---|---|
+| Store screenshot (hero / thumbnail) | 1280×800 | Yes | Yes |
+| Additional store screenshots (up to 4 more) | 1280×800 | No | Yes (target 5 total) |
+| Small promo tile | 440×280 | No | **Yes** |
+| Marquee promo tile | 1400×560 | No | **Yes** |
+| Social launch graphics (Twitter card / OG image) | 1200×628 or 1200×630 | No | Optional |
 
 First screenshot = the thumbnail in search results. Make it the most compelling one.
+
+**Why ship the promo tiles even though CWS doesn't require them.** Common wrong takeaway: *"marquee is only shown if Google features me, so I'll skip it."* This is backwards. Google's Featured-badge automation checks for a **complete listing with promotional images** as one of its criteria (along with MV3 manifest, user count, privacy-policy checkbox — see `docs/03-cws-best-practices.md` → Featured badge). No promo tile = automatically disqualified from Featured. Featured status drives almost every high-discoverability placement in the store. Each tile takes under a minute to generate from the same skill that made your screenshots. **Always ship both.** The only reason to skip is if you've decided not to market the extension.
 
 ### Directory layout (once scaffolded)
 
