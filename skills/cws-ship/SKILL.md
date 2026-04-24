@@ -31,9 +31,10 @@ writes:
 
 You are driving the `cws-ship` skill. Your single responsibility is to take the user from **"I want to ship this extension"** to a known terminal state (**`live`**, **`in-review`**, **`rejected`**, **`failed`**, or **`timeout`**) in one conversational flow. You do not re-implement any deterministic check — you orchestrate the existing scripts.
 
-The flow has four phases. Run them in order. Do not skip.
+The flow has five phases. Run them in order. Do not skip.
 
 ```
+Phase 0 — Health     : run generic repo-health (readiness.sh). Advisory by default.
 Phase A — Gate       : run ship-mode validator, delegate or stop on each rule id.
 Phase B — Version    : run version-sync, offer to bump if behind-or-equal.
 Phase C — Confirm    : summarize name/description/version/permissions/screenshots, confirm.
@@ -41,6 +42,29 @@ Phase D — Submit     : run `npm run ship`, parse publish-cws terminal state, h
 ```
 
 If the user interrupts (`stop`, `cancel`, `not yet`), halt at the current phase and report what's next when they come back.
+
+---
+
+## Phase 0 — Generic repo health (advisory)
+
+Before running the CWS-specific validator, run the generic repo-health check — linter/formatter config, pre-commit hooks, tests, coverage, lockfile, gitignore, CODEOWNERS, issue/PR templates. This is orthogonal to CWS rules (Phase A); it catches the "ships with no tests or lint" class of problem the CWS validator can't see.
+
+Run:
+
+```bash
+bash scripts/readiness.sh .
+```
+
+The script emits a human summary to stderr and JSON to stdout. Parse `passRate` (0-100).
+
+**Routing:**
+
+- **`passRate >= 70`** → print one-line "Phase 0 green (passRate N%)." Proceed to Phase A.
+- **`passRate < 70`** → print the "Top Actions" block from stderr verbatim, then offer:
+  > Repo-health score is **N%** (<70%). This won't block submission, but it flags generic hygiene gaps (lint, tests, hooks). Want me to run `bash scripts/readiness-fix.sh .` to autofix what's automatable? (y/n/skip). Either way I'll proceed to Phase A after.
+- **`CCE_READINESS_REQUIRED=1` env var set** AND `passRate < 70` → **BLOCK.** Surface the summary and stop. Tell the user to run `bash scripts/readiness-fix.sh .`, address unautomatable fails, then re-invoke. (Opt-in strict mode; off by default so existing users see no behavior change.)
+
+Proceed to Phase A in all non-blocking cases.
 
 ---
 

@@ -28,6 +28,16 @@
 - A deployable credential proxy (`proxy/`, with Cloudflare Workers and Vercel scaffolds; `proxy-authed/` for extensions with user sign-in) so your third-party API keys never land in the shipped bundle — the `no-bundled-credentials` validator rule is the forcing function
 - OAuth credentials wired so `npm run ship` does the build → version-sync → upload → poll for you
 - A `check:cws:ship` gate that refuses to produce a zip until the listing is submission-ready
+- **Two-layer validation** — generic repo-health (Layer 1) + CWS-specific rules (Layer 2), so you don't ship an extension that passes CWS but has no tests and no lint
+
+## Two-layer validation
+
+The factory validates on two orthogonal axes:
+
+- **Layer 1 — generic repo health.** `scripts/readiness.sh` (ported from parcadei's ContinuousClaudeV4.7, MIT) checks ~20 rules across 6 categories: lint/formatter config, type checking, pre-commit hooks, lockfile, tests, coverage, README, CLAUDE.md/AGENTS.md, .env.example, .gitignore, CODEOWNERS, issue/PR templates. Runs as **Phase 0** in `cws-ship` — advisory by default (prints score, offers autofix via `scripts/readiness-fix.sh`, proceeds regardless). Set `CCE_READINESS_REQUIRED=1` to make a low score (<70%) block submission. A corresponding opt-in validator rule `ship-ready-generic-health` (severity: warn) surfaces the score inside `npm run check:cws:ship --json` when the same env var is set.
+- **Layer 2 — CWS-specific rules.** `scripts/validate-cws.ts` — ~24 rules covering CSP, host permissions, remote-code patterns, listing drift, privacy policy reachability, screenshot/video readiness, etc. Authoritative for submission gating.
+
+The two layers are independent. Layer 1 is off the shipping critical path unless you opt in.
 
 ## Examples
 

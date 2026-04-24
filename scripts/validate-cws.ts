@@ -32,6 +32,7 @@
  */
 
 import { readFileSync, readdirSync, statSync, existsSync } from 'fs';
+import { spawnSync } from 'child_process';
 import { join, resolve, relative } from 'path';
 import { loadSecrets, getListing } from './cws-api.js';
 
@@ -1038,6 +1039,43 @@ async function shipReadyPrivacyPolicyReachable(ctx: Context): Promise<Finding[]>
   return [];
 }
 
+// Ship-only, opt-in: shells out to `scripts/readiness.sh` (Layer 1 generic
+// repo-health check — lint/formatter/tests/hooks/etc). This rule is disabled
+// unless `CCE_READINESS_REQUIRED=1` is set in the environment, so existing
+// users see no behavior change. When enabled, it reports the score as a
+// WARNING (never an error) — cws-ship's Phase 0 is the authoritative gate
+// for readiness. This rule exists for users who want the score to surface
+// in `npm run check:cws:ship --json` output without running cws-ship itself.
+function shipReadyGenericHealth(_ctx: Context): Finding[] {
+  if (process.env.CCE_READINESS_REQUIRED !== '1') return [];
+  const script = join(ROOT, 'scripts', 'readiness.sh');
+  if (!existsSync(script)) return [];
+  const res = spawnSync('bash', [script, ROOT], {
+    encoding: 'utf8',
+    // Suppress stderr (human summary); we only consume the JSON on stdout.
+    stdio: ['ignore', 'pipe', 'ignore'],
+  });
+  if (res.status !== 0 || !res.stdout) return [];
+  let report: { passRate?: number; level?: number };
+  try {
+    report = JSON.parse(res.stdout);
+  } catch {
+    return [];
+  }
+  const passRate = typeof report.passRate === 'number' ? report.passRate : 0;
+  if (passRate >= 70) return [];
+  return [
+    {
+      rule: 'ship-ready-generic-health',
+      severity: 'warn',
+      message: `Generic repo-health score ${passRate}% (<70%) — lint/formatter/tests/hooks gaps`,
+      why: 'Layer 1 check (readiness.sh): generic repo hygiene orthogonal to CWS rules. A low score does NOT block submission; it flags that the extension ships without the standard development-time guardrails.',
+      source: 'scripts/readiness.sh',
+      fix: 'Run `bash scripts/readiness-fix.sh .` to autofix automatable gaps (linter/formatter/prettier configs, pre-commit hooks, dependabot, .env.example, issue/PR templates, .gitignore). Then address unautomatable fails (write tests, add CODEOWNERS). This rule is opt-in via `CCE_READINESS_REQUIRED=1`.',
+    },
+  ];
+}
+
 // ---------- Runner ----------
 
 // Rule functions may be sync OR async. Async rules are used for checks
@@ -1071,6 +1109,7 @@ const SHIP_ONLY_RULES: RuleFn[] = [
   shipReadyScreenshots,
   shipReadyVideo,
   shipReadyPrivacyPolicyReachable,
+  shipReadyGenericHealth,
 ];
 
 async function main() {

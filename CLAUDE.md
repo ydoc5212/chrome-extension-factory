@@ -18,6 +18,15 @@ The canonical design doc is [**ARCHITECTURE.md**](ARCHITECTURE.md) — division 
 
 The user can't accidentally ship an un-customized fork: `npm run zip` is the only path to a submittable artifact, and it refuses until ship mode is green. The user never needs to know to "remember to run the validator" — it's wired into the only command that matters.
 
+### Two-layer validation architecture
+
+The factory validates on two orthogonal axes:
+
+- **Layer 1 — generic repo health** (`scripts/readiness.sh`, ported from parcadei's ContinuousClaudeV4.7 MIT, Category 7 stripped): lint/formatter/tests/hooks/lockfile/docs/gitignore/templates. 6 categories, ~20 rules. Advisory by default — runs as **Phase 0** in `cws-ship`, prints score, offers autofix via `scripts/readiness-fix.sh`. Set `CCE_READINESS_REQUIRED=1` to gate (block on score <70%).
+- **Layer 2 — CWS-specific rules** (`scripts/validate-cws.ts`): ~24 rules covering CSP, host permissions, remote-code, listing drift, screenshots/video, privacy. Authoritative for submission.
+
+The layers are independent. Layer 1 is off the shipping critical path unless opted in. Same `CCE_READINESS_REQUIRED=1` env var activates an opt-in warn-severity validator rule (`ship-ready-generic-health`) that surfaces the score via `--json` for skills that read the envelope directly.
+
 ### Quick rules when working in this repo
 
 - **Adding code that touches permissions, CSP, offscreen documents, content scripts, service-worker patterns?** Write the code, run `npm run check:cws`. Don't try to recall CWS rules from prose.
